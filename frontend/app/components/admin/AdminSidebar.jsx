@@ -56,6 +56,11 @@ const links = [
     href: "/admin/stock",
     icon: <FaShoppingCart />,
   },
+     {
+    name: "Cart Notification",
+    href: "/admin/setting/cartNotification",
+    icon: <FaShoppingCart />,
+  },
 ];
 
 export default function AdminSidebar() {
