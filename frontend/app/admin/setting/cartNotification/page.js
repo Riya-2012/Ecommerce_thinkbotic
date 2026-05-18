@@ -18,7 +18,8 @@ useEffect(() => {
     };
     
     fetchNotifications();
-  }, []);
+  }, [])
+  ;
   
 
 return (
@@ -27,7 +28,7 @@ return (
 
   {/* HEADER */}
 
-  <div className="grid grid-cols-3 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-100 text-sm font-semibold text-gray-600">
+  <div className="grid grid-cols-3 gap-4 px-6 py-4 bg-gray-50 border-b border-gray-100  text-sm font-semibold text-gray-600">
 
     {/* <div>User</div> */}
 
@@ -57,7 +58,7 @@ return (
 
               Date.now() -
 
-                3 *
+                  3 *
                   24 *
                   60 *
                   60 *
@@ -145,14 +146,17 @@ return (
             {oldItems.map(
               (item) => (
 
-                <div
-                  key={item._id}
+             <div     key={item._id}>
+                 <div
+              
                   className="bg-yellow-100 text-yellow-700 px-3 py-1 rounded-md text-xs font-medium"
                 >
 
                   {item.name}
 
                 </div>
+                <span className='text-xs'> (Added: {new Date(item.addedAt).toLocaleDateString()}) </span>
+             </div>
 
               )
             )}

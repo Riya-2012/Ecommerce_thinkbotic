@@ -158,7 +158,7 @@ const AdminAddLogo = () => {
 
       <form
         onSubmit={handleSubmit}
-        className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden"
+        className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden"
       >
 
         {/* TOP */}
@@ -197,6 +197,7 @@ const AdminAddLogo = () => {
               type="text"
               value={label}
               disabled
+              
               className="w-full mt-3 border border-gray-200 rounded-2xl px-5 py-4 bg-gray-100 outline-none"
             />
 
@@ -207,9 +208,7 @@ const AdminAddLogo = () => {
           <div>
 
             <label className="text-sm font-semibold text-gray-700">
-
               Redirect Path
-
             </label>
 
             <input

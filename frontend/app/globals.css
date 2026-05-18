@@ -55,15 +55,15 @@
 .swiper-button-next,
 .swiper-button-prev {
   background: white;
-  width: 60px;
-  height: 60px;
+  width: 40px !important;
+  height: 40px !important;
   border-radius: 50%;
   box-shadow: 0 4px 10px rgba(0,0,0,0.1);
 }
 
 .swiper-button-next::after,
 .swiper-button-prev::after {
-  font-size: 20px;
+  font-size: 16px;
   color: #2563eb; 
   font-weight: bold;
 }

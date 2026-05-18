@@ -101,7 +101,7 @@ useState("");
         320: { slidesPerView: 3 },
     640: { slidesPerView: 2 },
     768: { slidesPerView: 3 },
-    1024: { slidesPerView: 5 }, 
+    1024: { slidesPerView: 6 }, 
   }}
 >
   {allProducts.map((item, i) => (

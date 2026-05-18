@@ -410,7 +410,7 @@ function page() {
                         e.target.value
                       )
                     }
-                    className="border border-gray-200 rounded-xl px-3 py-2 outline-none"
+                    className="border w-20 border-gray-200 rounded-xl px-3 py-2 outline-none"
                   />
 
                 </td>
@@ -436,7 +436,7 @@ function page() {
                           )
                         )
                       }
-                      className="w-20 border border-gray-200 rounded-xl px-3 py-2 outline-none"
+                      className="w-18 border border-gray-200 rounded-xl px-3 py-2 outline-none"
                     />
 
                     <span>%</span>
@@ -464,7 +464,6 @@ function page() {
                     }
                     className="w-full border border-gray-200 rounded-xl px-3 py-2 outline-none"
                   />
-
                 </td>
 
                 {/* VALIDITY */}
@@ -488,7 +487,7 @@ function page() {
                         )
                       )
                     }
-                    className="w-24 border border-gray-200 rounded-xl px-3 py-2 outline-none"
+                    className="w-16 border border-gray-200 rounded-xl px-3 py-2 outline-none"
                   />
 
                 </td>
