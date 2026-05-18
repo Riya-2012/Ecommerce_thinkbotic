@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema({
         enum: ["Male", "Female", "Other"],
         default: "Other"
     },
-});
+},{timestamps:true});
 
 // *---------------------------
 //      Hash Password

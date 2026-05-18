@@ -4,145 +4,377 @@ import {
   FaUsers,
   FaBoxOpen,
   FaShoppingCart,
-  FaRupeeSign,
 } from "react-icons/fa";
 
 import {
   MdInventory,
 } from "react-icons/md";
-import api from "../lib/axios";
-import { useEffect, useState } from "react";
-import { useAuth } from "../context/AuthContext";
+
+import api, { BASE_URL } from "../lib/axios";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import {
+  useAuth,
+} from "../context/AuthContext";
 
 export default function AdminDashboard() {
 
-const {user}=useAuth()
- const [inquiryCount, setInquiryCount] = useState(0);
-  const [recentOrderCount, setRecentOrderCount] = useState(0);
-  const [totalSale, setTotalSale] = useState(0);
-  const [usersCount, setUsersCount] = useState(0);
-  const [outOfStockCount, setOutOfStockCount] = useState(0);
-  const [fewLeftCount, setFewLeftCount] = useState(0);
-  const [cartNotificationCount, setCartNotificationCount] = useState(0);
-  const [bulkOrderCount, setBulkOrderCount] = useState(0);
-  const [customizationCount, setCustomizationCount] = useState(0);
+  const { user } =
+    useAuth();
 
-  const [lowStockProducts,setLowStockProducts]=useState(0);
+  // STATES
+
+  const [
+    inquiryCount,
+    setInquiryCount,
+  ] = useState(0);
+
+  const [
+    recentOrderCount,
+    setRecentOrderCount,
+  ] = useState(0);
+
+  const [
+    totalSale,
+    setTotalSale,
+  ] = useState(0);
+
+  const [
+    usersCount,
+    setUsersCount,
+  ] = useState(0);
+
+  const [
+    outOfStockCount,
+    setOutOfStockCount,
+  ] = useState(0);
+
+  const [
+    fewLeftCount,
+    setFewLeftCount,
+  ] = useState(0);
+
+  const [
+    cartNotificationCount,
+    setCartNotificationCount,
+  ] = useState(0);
+
+  const [
+    bulkOrderCount,
+    setBulkOrderCount,
+  ] = useState(0);
+
+  const [
+    customizationCount,
+    setCustomizationCount,
+  ] = useState(0);
+
+  const [
+    recentOrder,
+    setRecentOrder,
+  ] = useState([]);
+
+  const [lowStockProduct,setLowStockProduct]=useState([]);
+  const [
+    products,
+    setProducts,
+  ] = useState([]);
+
+  const [users, setUsers] = useState([]);
+
+  // FETCH ALL DATA
 
   useEffect(() => {
-    // Fetch all inquiries
+
+    // INQUIRIES
+
     api
       .get(`api/admin/inquiry`)
       .then((res) => {
-        const inquiries = Array.isArray(res.data) ? res.data : [];
-        setBulkOrderCount(inquiries.filter((i) => i.isBulkOrder).length);
-        setCustomizationCount(inquiries.filter((i) => i.isCustomization).length);
+
+        const inquiries =
+          Array.isArray(
+            res.data
+          )
+            ? res.data
+            : [];
+
+        setBulkOrderCount(
+
+          inquiries.filter(
+            (i) =>
+              i.isBulkOrder
+          ).length
+        );
+
+        setCustomizationCount(
+
+          inquiries.filter(
+            (i) =>
+              i.isCustomization
+          ).length
+        );
       })
       .catch(() => {
+
         setBulkOrderCount(0);
+
         setCustomizationCount(0);
+
       });
 
-    // Fetch inquiry count
-    api
-      .get(`api/admin/inquiry/count`)
-      .then((res) => setInquiryCount(res.data.count || 0))
-      .catch(() => setInquiryCount(0));
+    // TOTAL INQUIRIES
 
-    // Fetch recent confirmed orders count (last 7 days)
     api
-      .get(`api/admin/orders/recent-count`)
-      .then((res) => setRecentOrderCount(res.data.count || 0))
-      .catch(() => setRecentOrderCount(0));
+      .get(
+        `api/admin/inquiry/count`
+      )
+      .then((res) =>
 
-    // Fetch total sale
+        setInquiryCount(
+          res.data.count || 0
+        )
+
+      )
+      .catch(() =>
+
+        setInquiryCount(0)
+
+      );
+
+    // RECENT ORDERS
+
     api
-      .get(`api/admin/orders/total-sale`)
-      .then((res) => setTotalSale(res.data.totalSale || 0))
-      .catch(() => setTotalSale(0));
+      .get(
+        `api/admin/orders/recent-count`
+      )
+      .then((res) => {
 
-    // Fetch users count
+        setRecentOrderCount(
+          res.data.count || 0
+        );
+
+        setRecentOrder(
+          res.data.orders || []
+        );
+
+      })
+      .catch(() => {
+
+        setRecentOrderCount(0);
+
+        setRecentOrder([]);
+
+      });
+
+    // TOTAL SALE
+
+    api
+      .get(
+        `api/admin/orders/total-sale`
+      )
+      .then((res) =>
+
+        setTotalSale(
+          res.data.totalSale || 0
+        )
+
+      )
+      .catch(() =>
+
+        setTotalSale(0)
+
+      );
+
+    // USERS
+
     api
       .get(`api/admin/users`)
-      .then((res) => setUsersCount(Array.isArray(res.data) ? res.data.length : 0))
-      .catch(() => setUsersCount(0));
+      .then((res) =>{
 
-    // Fetch stock data for badges
+        const usersData =
+      Array.isArray(
+        res.data
+      )
+        ? res.data
+        : [];
+
+    setUsers(usersData);
+
+    setUsersCount(
+      usersData.length
+    );
+      }
+
+       
+
+      )
+      .catch(() =>
+
+        setUsersCount(0)
+
+      );
+
+    // PRODUCTS
+
     api
-      .get(`api/admin/productpage`)
+      .get(
+        `api/admin/productpage`
+      )
       .then((res) => {
-        const products = Array.isArray(res.data) ? res.data : res.data.data || [];
+
+        const products =
+          Array.isArray(
+            res.data
+          )
+
+            ? res.data
+
+            : res.data.data || [];
+
+        setProducts(products);
+ setLowStockProduct( 
+  products.filter(
+
+            (p) =>
+
+           
+
+              p.stock <= 5
+
+          )
+ )
         setOutOfStockCount(
+
           products.filter(
-            (p) => p.stockStatus === "out-of-stock" || p.stock === 0
+
+            (p) =>
+
+              p.stockStatus ===
+              "out-of-stock" ||
+
+              p.stock === 0
+
           ).length
         );
 
+        
         setFewLeftCount(
+
           products.filter(
+
             (p) =>
-              (p.stockStatus === "few-left" || (typeof p.stock === "number" && p.stock < 5 && p.stock > 0))
+
+              p.stockStatus ===
+              "few-left" ||
+
+              (typeof p.stock ===
+                "number" &&
+
+                p.stock < 5 &&
+
+                p.stock > 0)
+
           ).length
         );
-     
       })
       .catch(() => {
+
         setOutOfStockCount(0);
+
         setFewLeftCount(0);
+
       });
 
-    // Fetch cart notification count
+    // CART ALERTS
+
     api
-      .get(`api/admin/cart-notifications`)
+      .get(
+        `api/admin/cart-notifications`
+      )
       .then((res) => {
-        // Only count carts with at least one item older than 3 days
-        const count = Array.isArray(res.data)
-          ? res.data.filter(cart =>
-              cart.items.some(item => new Date(item.addedAt) <= new Date(Date.now() -3 * 24 * 60 * 60 * 1000))
+
+        const count =
+          Array.isArray(
+            res.data
+          )
+
+            ? res.data.filter(
+
+              (cart) =>
+
+                cart.items.some(
+
+                  (item) =>
+
+                    new Date(
+                      item.addedAt
+                    )
+
+                    <=
+
+                    new Date(
+
+                      Date.now() -
+
+                      3 *
+                      24 *
+                      60 *
+                      60 *
+                      1000
+                    )
+                )
             ).length
-          : 0;
-        setCartNotificationCount(count);
+
+            : 0;
+
+        setCartNotificationCount(
+          count
+        );
       })
-      .catch(() => setCartNotificationCount(0));
+      .catch(() =>
+
+        setCartNotificationCount(0)
+
+      );
+
   }, [user]);
 
-
-
-
-
-
-
-       const summaryCards = [
+  // SUMMARY CARDS
+console.log("low stock",lowStockProduct)
+  const summaryCards = [
 
     {
       title: "Total Users",
       value: usersCount,
       icon: <FaUsers />,
-      bg: "bg-blue-100 text-blue-600",
+      bg:
+        "bg-blue-100 text-blue-600",
     },
 
     {
       title: "Total Sales",
-      value: `₹${totalSale}` ,
+      value: `₹${totalSale}`,
       icon: <FaBoxOpen />,
-      bg: "bg-green-100 text-green-600",
+      bg:
+        "bg-green-100 text-green-600",
     },
 
     {
       title: "Recent Orders",
       value: recentOrderCount,
-      icon: <FaShoppingCart />,
-      bg: "bg-yellow-100 text-yellow-700",
+      icon:
+        <FaShoppingCart />,
+      bg:
+        "bg-yellow-100 text-yellow-700",
     },
 
-    // {
-    //   title: "Cart Notification",
-    //   value: "₹0",
-    //   icon: <FaRupeeSign />,
-    //   bg: "bg-red-100 text-red-600",
-    // },
-
   ];
+
   return (
 
     <div className="space-y-8">
@@ -153,64 +385,65 @@ const {user}=useAuth()
 
         <h1 className="text-3xl font-bold text-[#0f172a]">
 
-          Dashboard overview
+          Dashboard Overview
 
         </h1>
-{/* 
-        <p className="text-gray-500 mt-1">
 
-   
+        <p className="text-gray-500 mt-2">
 
-        </p> */}
+
+
+        </p>
 
       </div>
 
-      {/* SUMMARY CARDS */}
+      {/* SUMMARY */}
 
       <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
 
-        {summaryCards.map((card, i) => (
+        {summaryCards.map(
+          (card, i) => (
 
-          <div
-            key={i}
-            className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition"
-          >
+            <div
+              key={i}
+              className="bg-white rounded-xl border border-gray-100 shadow-sm p-6 hover:shadow-md transition"
+            >
 
-            <div className="flex items-center justify-between">
+              <div className="flex items-center justify-between">
 
-              <div>
+                <div>
 
-                <p className="text-sm text-gray-500">
+                  <p className="text-sm text-gray-500">
 
-                  {card.title}
+                    {card.title}
 
-                </p>
+                  </p>
 
-                <h2 className="text-3xl font-bold text-[#0f172a] mt-3">
+                  <h2 className="text-3xl font-bold text-[#0f172a] mt-3">
 
-                 {card.value}
+                    {card.value}
 
-                </h2>
+                  </h2>
 
-              </div>
+                </div>
 
-              <div
-                className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${card.bg}`}
-              >
+                <div
+                  className={`w-14 h-14 rounded-2xl flex items-center justify-center text-2xl ${card.bg}`}
+                >
 
-                {card.icon}
+                  {card.icon}
+
+                </div>
 
               </div>
 
             </div>
-
-          </div>
-
-        ))}
+          )
+        )}
 
       </div>
 
-      {/* MIDDLE SECTION */}
+      {/* MIDDLE */}
 
       <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
 
@@ -236,22 +469,74 @@ const {user}=useAuth()
 
             </div>
 
-            <button className="text-primary-blue font-semibold text-sm">
-
-              View All
-
-            </button>
-
           </div>
 
           <div className="p-6">
 
-            <div className="flex items-center justify-center h-[250px] text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+            <div className="space-y-4 w-full">
 
-              Orders will appear here
-              <div>
-                orders
-              </div>
+              {recentOrder.length === 0 ? (
+
+                <div className="text-center text-gray-400">
+
+                  No recent orders
+
+                </div>
+
+              ) : (
+
+                recentOrder
+                  .slice(0, 5)
+                  .map((order) => (
+
+                    <div
+                      key={order._id}
+                      className="flex items-center justify-between bg-gray-50 rounded-2xl p-4"
+                    >
+
+                      <div>
+
+                        <h3 className="font-semibold text-[#0f172a]">
+
+                          #
+                          {order._id.slice(
+                            -6
+                          )}
+
+                        </h3>
+
+                        <p className="text-sm text-gray-500 mt-1">
+
+                          {new Date(
+                            order.createdAt
+                          ).toLocaleDateString()}
+
+                        </p>
+
+                      </div>
+
+                      <div className="text-right">
+
+                        <h3 className="font-bold text-primary-blue">
+
+                          ₹
+                          {order.payment
+                            ?.amount || 0}
+
+                        </h3>
+
+                        <p className="text-xs text-green-600 mt-1">
+
+                          {order.payment
+                            ?.status}
+
+                        </p>
+
+                      </div>
+
+                    </div>
+                  ))
+              )}
 
             </div>
 
@@ -288,62 +573,205 @@ const {user}=useAuth()
             </div>
 
           </div>
+<div className="p-6">
 
-          <div className="p-6">
+  <div className="space-y-4">
 
-            <div className="flex items-center justify-center h-[250px] text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+    {lowStockProduct.length === 0 ? (
 
-              Low stock products will appear here
+      <div className="text-center text-gray-400 py-10">
 
-            </div>
-
-          </div>
-
-        </div>
+        No low stock products
 
       </div>
 
-      {/* BOTTOM SECTION */}
+    ) : (
 
-      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+      lowStockProduct.map((low) => (
 
-        {/* RECENT USERS */}
+        <div
+          key={low._id}
+          className="flex items-center justify-between bg-gray-50 hover:bg-gray-100 transition rounded-2xl p-4"
+        >
 
-        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+          {/* LEFT */}
 
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div className="flex items-center gap-4">
+
+            {/* IMAGE */}
+
+            <div className="w-14 h-14 rounded-2xl overflow-hidden bg-white border border-gray-100">
+
+              <img
+                src={`${BASE_URL}/${low.img}`}
+                alt={low.name}
+                className="w-full h-full object-cover"
+              />
+
+            </div>
+
+            {/* INFO */}
 
             <div>
 
-              <h2 className="text-xl font-bold text-[#0f172a]">
+              <h3 className="font-semibold text-[#0f172a]">
 
-                Recent Users
+                {low.name}
 
-              </h2>
+              </h3>
 
               <p className="text-sm text-gray-500 mt-1">
 
-                Newly registered users
+                {low.category}
 
               </p>
 
             </div>
 
-            <button className="text-primary-blue font-semibold text-sm">
+          </div>
 
-              View All
+          {/* RIGHT */}
 
-            </button>
+          <div>
+
+            {low.stock === 0 ? (
+
+              <div className="bg-red-100 text-red-600 px-4 py-2 rounded-full text-xs font-semibold">
+
+                Out of Stock
+
+              </div>
+
+            ) : (
+
+              <div className="bg-yellow-100 text-yellow-700 px-4 py-2 rounded-full text-xs font-semibold">
+
+                {low.stock}
+                {" "}
+                Left
+
+              </div>
+
+            )}
 
           </div>
 
-          <div className="p-6">
+        </div>
 
-            <div className="flex items-center justify-center h-[220px] text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+      ))
 
-              Recent users will appear here
+    )}
+
+  </div>
+
+</div>
+        </div>
+
+      </div>
+
+      {/* BOTTOM */}
+
+      <div className="grid grid-cols-1 xl:grid-cols-2 gap-6">
+
+        {/* USERS */}
+
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
+
+          <div className="px-6 py-5 border-b border-gray-100">
+
+            <h2 className="text-xl font-bold text-[#0f172a]">
+
+              Users Overview
+
+            </h2>
+
+          </div>
+
+          <div className="p-0">
+
+         <div className="divide-y divide-gray-100">
+
+  {users.length === 0 ? (
+
+    <div className="p-10 text-center text-gray-400">
+
+      No users found
+
+    </div>
+
+  ) : (
+
+    users
+      .slice(-5)
+      .reverse()
+      .map((user) => (
+
+        <div
+          key={user._id}
+          className="px-6 py-5 flex items-center justify-between hover:bg-gray-50 transition"
+        >
+
+          {/* LEFT */}
+
+          <div className="flex items-center gap-4">
+
+            {/* AVATAR */}
+
+            <div className="w-8 h-8 rounded-2xl bg-gradient-blue-red text-white flex items-center justify-center font-bold text-lg">
+
+              {user.username
+                ?.charAt(0)
+                ?.toUpperCase()}
 
             </div>
+
+            {/* INFO */}
+
+            <div>
+
+              <h3 className="font-semibold text-[#0f172a]">
+
+                {user.username}
+
+              </h3>
+
+              <p className="text-sm text-gray-500 mt-1">
+
+                {user.email}
+
+              </p>
+
+            </div>
+
+          </div>
+
+          {/* RIGHT */}
+
+          {/* <div className="text-right">
+
+            <p className="text-sm text-gray-500">
+
+              Joined
+
+            </p>
+
+            <p className="text-sm font-medium text-[#0f172a] mt-1">
+
+              {new Date(
+                user.createdAt
+              ).toLocaleDateString()}
+
+            </p>
+
+          </div> */}
+
+        </div>
+
+      ))
+
+  )}
+
+</div>
 
           </div>
 
@@ -353,37 +781,83 @@ const {user}=useAuth()
 
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 
-          <div className="flex items-center justify-between px-6 py-5 border-b border-gray-100">
+          <div className="px-6 py-5 border-b border-gray-100">
 
-            <div>
+            <h2 className="text-xl font-bold text-[#0f172a]">
 
-              <h2 className="text-xl font-bold text-[#0f172a]">
+              Inquiry Analytics
 
-                Pending Inquiries
-
-              </h2>
-
-              <p className="text-sm text-gray-500 mt-1">
-
-                Customer requests and enquiries
-
-              </p>
-
-            </div>
-
-            <button className="text-primary-blue font-semibold text-sm">
-
-              View All
-
-            </button>
+            </h2>
 
           </div>
 
           <div className="p-6">
 
-            <div className="flex items-center justify-center h-[220px] text-gray-400 border-2 border-dashed border-gray-200 rounded-2xl">
+            <div className="grid grid-cols-2 gap-4 w-full">
 
-              Inquiries will appear here
+              <div className="bg-blue-50 rounded-2xl p-5">
+
+                <p className="text-sm text-gray-500">
+
+                  Total Inquiries
+
+                </p>
+
+                <h3 className="text-3xl font-bold text-blue-600 mt-2">
+
+                  {inquiryCount}
+
+                </h3>
+
+              </div>
+
+              <div className="bg-red-50 rounded-2xl p-5">
+
+                <p className="text-sm text-gray-500">
+
+                  Bulk Orders
+
+                </p>
+
+                <h3 className="text-3xl font-bold text-red-600 mt-2">
+
+                  {bulkOrderCount}
+
+                </h3>
+
+              </div>
+
+              <div className="bg-yellow-50 rounded-2xl p-5">
+
+                <p className="text-sm text-gray-500">
+
+                  Customization
+
+                </p>
+
+                <h3 className="text-3xl font-bold text-yellow-700 mt-2">
+
+                  {customizationCount}
+
+                </h3>
+
+              </div>
+
+              <div className="bg-green-50 rounded-2xl p-5">
+
+                <p className="text-sm text-gray-500">
+
+                  Cart Alerts
+
+                </p>
+
+                <h3 className="text-3xl font-bold text-green-600 mt-2">
+
+                  {cartNotificationCount}
+
+                </h3>
+
+              </div>
 
             </div>
 

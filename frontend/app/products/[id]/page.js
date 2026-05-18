@@ -111,12 +111,12 @@ const imageUrl = selectedImage
   : "/product-1.jpg";
   const router=useRouter();
 
-//   const handleColorChange = (idx) => {
-//     setSelectedColorIdx(idx);
-//   setSelectedImage(
-//   product.images?.[idx]?.imageSet?.[0]
-// );
-//   };
+  const handleColorChange = (idx) => {
+    setSelectedColorIdx(idx);
+  setSelectedImage(
+  product.images?.[idx]?.imageSet?.[0]
+);
+  };
 
   const renderStars = (rating) => {
     const stars = [];
@@ -281,33 +281,38 @@ const imageUrl = selectedImage
           </div>
 
           {/* COLORS */}
-          {/* {product.images && product.images.length > 0 && (
+          {product.images && product.images.length > 0 && (
             <div>
               <div className="flex justify-between items-end mb-3">
                 <h3 className="text-gray-900 font-semibold">Select Color</h3>
-                <span className="text-primary-blue text-sm font-medium">{product.images[selectedColorIdx].imageColor}</span>
+                {/* <span className="text-primary-blue text-sm font-medium">{product.images[selectedColorIdx].imageColor}</span> */}
               </div>
               <div className="flex flex-wrap gap-4">
                 {product.images.map((imgObj, idx) => (
                   <button
                     key={idx}
                     onClick={() => handleColorChange(idx)}
-                    className={`relative w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${
+                    className={`relative w-6 h-6 rounded-full flex items-center justify-center transition-all duration-300 ${
                       selectedColorIdx === idx 
                         ? "ring-2 ring-offset-4 ring-primary-blue scale-110 shadow-md" 
                         : "ring-1 ring-gray-200 hover:scale-105 hover:ring-gray-300"
                     }`}
-                    style={{ backgroundColor: imgObj.colorCode || '#ddd' }}
+                    style={{ backgroundColor: imgObj.imageColor}}
                     title={imgObj.imageColor}
+                    
                   >
+{/*                     
                     {selectedColorIdx === idx && (
                       <FaCheckCircle className={`text-xl ${imgObj.colorCode === '#f8fafc' || imgObj.colorCode === '#ffffff' ? 'text-gray-800' : 'text-white drop-shadow-md'}`} />
-                    )}
+                    )} */}
+                    
                   </button>
+                  
                 ))}
+                 
               </div>
             </div>
-          )} */}
+          )}
 
           {/* QUANTITY */}
           <div>
@@ -343,6 +348,7 @@ const imageUrl = selectedImage
             <button className=" bg-white border-2 border-primary-red text-primary-red hover:bg-primary-blue hover:scale-[1.02] hover:border-primary-blue hover:text-white py-3 px-6 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-sm hover:shadow-md">
               <FaShoppingCart /> Add to Cart
             </button>
+            
             <button className="bg-gradient-blue-red  text-white py-3 px-6 rounded-2xl font-bold text-lg transition-all duration-300 flex items-center justify-center gap-2 shadow-lg  hover:shadow-xl hover:scale-[1.02]">
               <FaBolt /> Buy It Now
             </button>
