@@ -1,172 +1,303 @@
-"use client"
-import { FaPhone, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
-import { IoIosMail } from "react-icons/io";
-import { FaLinkedinIn } from "react-icons/fa6";
+"use client";
+
+import {
+  FaPhone,
+  FaFacebookF,
+  FaInstagram,
+  FaYoutube,
+  FaTwitter,
+} from "react-icons/fa";
+
+import {
+  IoIosMail,
+} from "react-icons/io";
+
+import {
+  FaLinkedinIn,
+} from "react-icons/fa6";
+
 import Image from "next/image";
-import { IoLocationSharp } from "react-icons/io5";
-import { useEffect, useState } from "react";
-import api, { BASE_URL } from "@/app/lib/axios";
+
+import {
+  IoLocationSharp,
+} from "react-icons/io5";
+
+import {
+  useEffect,
+  useState,
+} from "react";
+
+import Link from "next/link";
+
+import api,
+{
+  BASE_URL,
+} from "@/app/lib/axios";
+
 function Footer() {
-const [footerData,
-setFooterData] =
-useState([]);
 
-const [logoItem,
-setLogoItem] =
-useState(null);
-useEffect(() => {
+  const [footerData,
+  setFooterData] =
+    useState(null);
 
-  const fetchFooter =
-    async () => {
+  const [logoItem,
+  setLogoItem] =
+    useState(null);
 
-      try {
+  useEffect(() => {
 
-        // FOOTER
+    const fetchFooter =
+      async () => {
 
-        const response =
-          await api.get(
-            `/api/comman/footer`
+        try {
+
+          // FOOTER
+
+          const response =
+            await api.get(
+              `/api/admin/landingpage/footer`
+            );
+
+          setFooterData(
+            response.data.data
           );
 
-        setFooterData(
-          response.data.data || []
-        );
+          // NAVBAR LOGO
 
-        // NAVBAR LOGO
+          const navbarRes =
+            await api.get(
+              `/api/comman/navbar`
+            );
 
-        const navbarRes =
-          await api.get(
-            `/api/comman/navbar`
-          );
+          const navbarItems =
+            navbarRes.data.data || [];
 
-        const navbarItems =
-          navbarRes.data.data || [];
+          const logo =
+            navbarItems.find(
 
-        const logo =
-          navbarItems.find(
+              (item) =>
+                item.label ===
+                "LOGO"
+            );
 
-            (item) =>
-              item.label ===
-              "LOGO"
-          );
+          setLogoItem(logo);
 
-        setLogoItem(logo);
+        } catch (error) {
 
-      } catch (error) {
+          console.log(error);
 
-        console.log(error);
+        }
+      };
 
-      }
-    };
+    fetchFooter();
 
-  fetchFooter();
+  }, []);
 
-}, []);
+  // SOCIAL ICONS
+
+  const socialIcons = {
+
+    facebook:
+      <FaFacebookF />,
+
+    instagram:
+      <FaInstagram />,
+
+    linkedin:
+      <FaLinkedinIn />,
+
+    twitter:
+      <FaTwitter />,
+
+  };
 
   return (
-    <div className=" shadow-2xl" >
+
+    <div className="shadow-2xl bg-white">
 
       {/* MAIN FOOTER */}
-      <div className="px-6 lg:px-12 py-12 shadow-md text-white"> 
+
+      <div className="px-6 lg:px-12 py-12 shadow-md">
 
         {/* GRID */}
-        <div className="max-w-[1400px] mx-auto  grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
-          
-          <div className="lg:col-span-2 md:col-span-3">
+        <div className="max-w-[1400px] mx-auto grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-10">
 
-             {logoItem?.logo && (
+          {/* LEFT */}
 
-          <Image
-            src={`${BASE_URL}/uploads/${logoItem.logo}`}
-            alt="logo"
-            width={300}
-            height={200}
-            unoptimized
-            className="mb-5"
-          />
+          <div className="lg:col-span-2 md:col-span-2">
 
-        )}
+            {/* LOGO */}
 
+            {logoItem?.logo && (
+
+              <Image
+                src={`${BASE_URL}/uploads/${logoItem.logo}`}
+                alt="logo"
+                width={220}
+                height={100}
+                unoptimized
+                className="mb-5"
+              />
+
+            )}
+
+            {/* DESCRIPTION */}
 
             <p className="mt-4 text-black max-w-md text-sm leading-relaxed">
-              Thinkbotic Technology Pvt. Ltd. delivers innovative e-commerce and
-              digital solutions. We focus on quality, performance, and user-friendly
-              experiences to help businesses grow faster.
+
+              {
+                footerData?.companyDescription
+              }
+
             </p>
 
-            {/* Address*/}
-            <p className="flex items-center gap-1 text-sm hover:text-primary-blue text-black transition mt-6">
-                <IoLocationSharp className="text-primary-red"   size={22}/>
-                E-14, 3rd Floor, Sector-3, Noida, <br /> Uttar Pradesh - 201301, India
-              </p>
-      
+            {/* ADDRESS */}
+
+            <p className="flex items-start gap-2 text-sm hover:text-primary-blue text-black transition mt-6 leading-6">
+
+              <IoLocationSharp
+                className="text-primary-red mt-1"
+                size={22}
+              />
+
+              {
+                footerData?.address
+              }
+
+            </p>
+
           </div>
 
-     
+          {/* QUICK LINKS */}
 
-           {/* QUICK LINKS */}
-          <div >
+          <div>
+
             <h2 className="font-semibold text-lg text-primary-red mb-4">
+
               Quick Links
+
             </h2>
 
             <ul className="space-y-3 text-black text-sm">
-              <li className="hover:text-primary-blue cursor-pointer transition">
-                Home
-              </li>
-              <li className="hover:text-primary-blue cursor-pointer transition">
-                Products
-              </li>
-              <li className="hover:text-primary-blue cursor-pointer transition">
-                Cart
-              </li>
-              <li className="hover:text-primary-blue cursor-pointer transition">
-                Login
-              </li>
+
+              {footerData?.quickLinks?.map(
+                (item, i) => (
+
+                  <Link
+                    href={item.link}
+                    key={i}
+                  >
+
+                    <li className="hover:text-primary-blue cursor-pointer transition mb-3 ">
+
+                      {item.label}
+
+                    </li>
+
+                  </Link>
+
+                )
+              )}
+
             </ul>
+
           </div>
 
           {/* CONTACT */}
+
           <div>
+
             <h2 className="font-semibold text-lg text-primary-red mb-4">
+
               Contact
+
             </h2>
 
             <div className="space-y-4 text-black text-sm">
 
-              <p className="flex items-center gap-2 hover:text-primary-blue transition">
-                <FaPhone className="text-primary-blue"   size={20}/>
-                (+91) 888888888
-              </p>
+              {/* PHONE */}
 
-              <p className="flex items-center gap-2 hover:text-primary-blue transition">
-                <IoIosMail className="text-primary-blue"   size={20}/>
-                support@thinkbotic.in
-              </p>
+              <a
+                href={`tel:${footerData?.phone}`}
+                className="flex items-center gap-2 hover:text-primary-blue transition"
+              >
+
+                <FaPhone
+                  className="text-primary-blue"
+                  size={20}
+                />
+
+                {
+                  footerData?.phone
+                }
+
+              </a>
+
+              {/* EMAIL */}
+
+              <a
+                href={`mailto:${footerData?.email}`}
+                className="flex items-center gap-2 hover:text-primary-blue transition"
+              >
+
+                <IoIosMail
+                  className="text-primary-blue"
+                  size={20}
+                />
+
+                {
+                  footerData?.email
+                }
+
+              </a>
 
             </div>
-                  <div className="flex gap-4 mt-6">
 
-              {[FaFacebookF, FaLinkedinIn, FaInstagram, FaYoutube].map((Icon, i) => (
-                <div
-                  key={i}
-                  className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-primary-red hover:bg-gradient-blue-red hover:text-primary-blue transition cursor-pointer"
-                >
-                  <Icon />
-                </div>
-              ))}
+            {/* SOCIALS */}
+
+            <div className="flex gap-4 mt-6">
+
+              {footerData?.socials?.map(
+                (item, i) => (
+
+                  <Link
+                    href={item.link}
+                    key={i}
+                    target="_blank"
+                  >
+
+                    <div className="w-10 h-10 flex items-center justify-center rounded-full border border-gray-200 text-primary-red hover:bg-gradient-blue-red hover:text-primary-blue transition cursor-pointer">
+
+                      {
+                        socialIcons[
+                          item.platform?.toLowerCase()
+                        ]
+                      }
+
+                    </div>
+
+                  </Link>
+
+                )
+              )}
 
             </div>
+
           </div>
-      
 
         </div>
+
       </div>
 
       {/* BOTTOM */}
-      <div className=" bg-gradient-blue-red text-white text-center py-4 text-sm">
-        © SRK Innovations - All Rights Reserved | Powered by Thinkbotic
+
+      <div className="bg-gradient-blue-red text-white text-center py-4 text-sm">
+
+        {
+          footerData?.copyright
+        }
+
       </div>
 
     </div>

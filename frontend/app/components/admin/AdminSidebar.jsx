@@ -21,6 +21,7 @@ const links = [
     href: "/admin",
     icon: <FaUser />,
   },
+  
   {
     name: "User",
     href: "/admin/user",
@@ -40,6 +41,11 @@ const links = [
     name: "Products",
     href: "/admin/products",
     icon: <FaCreditCard />,
+  },
+   {
+    name: "Footer",
+    href: "/admin/footer",
+    icon: <FaMapMarkerAlt />,
   },
   {
     name: "Category",

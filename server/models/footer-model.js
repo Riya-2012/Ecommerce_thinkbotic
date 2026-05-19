@@ -1,18 +1,52 @@
-const mongoose = require("mongoose");
+const mongoose =
+require("mongoose");
 
-const footerSchema = new mongoose.Schema({
-  title: {
+const footerSchema =
+new mongoose.Schema({
+
+  companyDescription: {
     type: String,
-    required: true,
   },
-  description: {
+
+  address: {
     type: String,
-    required: true,
   },
-  details: {
-    type: [String], // Array of strings for dynamic details
-    required: true,
+
+  phone: {
+    type: String,
   },
+
+  email: {
+    type: String,
+  },
+
+  copyright: {
+    type: String,
+  },
+
+  quickLinks: [
+    {
+      label: String,
+      link: String,
+    }
+  ],
+
+  socials: [
+
+    {
+      platform: String,
+
+      link: String,
+    }
+
+  ],
+
+}, {
+  timestamps: true,
 });
 
-module.exports = mongoose.model("Footer", footerSchema);
+module.exports =
+mongoose.model(
+  "Footertwo",
+  footerSchema
+);

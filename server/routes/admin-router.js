@@ -7,6 +7,7 @@ const adminMiddleware = require("../middleware/admin-middleware");
 const { uploadSingle, uploadMultiple } = require("../middleware/upload-middleware");
 const adminProductController = require("../controllers/admin-productController");
 const { addBanner, deleteBanner, getBanners, updateBanner } = require("../controllers/banner-Controller");
+const { getFooter, createFooter ,deleteFooter, updateFooter} = require("../controllers/footer-Controller");
 
 const router = express.Router();
 
@@ -79,15 +80,22 @@ router
 /*..........................................
 ..........Footer Routes................
 ..........................................*/
-router.route("/landingpage/footer")
-    .get(authMiddleware, adminMiddleware, adminController.getAllFooter)
-    .post(authMiddleware, adminMiddleware, adminController.createFooter);
+// router.route("/landingpage/footer")
+//     .get(authMiddleware, adminMiddleware, adminController.getAllFooter)
+//     .post(authMiddleware, adminMiddleware, adminController.createFooter);
 
-router.route("/landingpage/footer/:id")
-    .get(authMiddleware, adminMiddleware, adminController.findFooterById)
-    .put(authMiddleware, adminMiddleware, uploadSingle, adminController.updateFooterById)
-    .delete(authMiddleware, adminMiddleware, adminController.deleteFooterById);
+// router.route("/landingpage/footer/:id")
+//     .get(authMiddleware, adminMiddleware, adminController.findFooterById)
+//     .put(authMiddleware, adminMiddleware, uploadSingle, adminController.updateFooterById)
+//     .delete(authMiddleware, adminMiddleware, adminController.deleteFooterById);
 
+
+
+router.route("/landingpage/footer").get(getFooter)
+router.route("/landingpage/footer").post(authMiddleware, adminMiddleware,createFooter)
+
+router.route("/landingpage/footer/:id").put(authMiddleware, adminMiddleware,updateFooter)
+router.route("/landingpage/footer/:id").delete(authMiddleware, adminMiddleware,deleteFooter)
 /*..........................................
 ..........Carts Routes................
 ..........................................*/
