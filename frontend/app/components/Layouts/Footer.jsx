@@ -1,9 +1,68 @@
+"use client"
 import { FaPhone, FaFacebookF, FaInstagram, FaYoutube } from "react-icons/fa";
 import { IoIosMail } from "react-icons/io";
 import { FaLinkedinIn } from "react-icons/fa6";
 import Image from "next/image";
 import { IoLocationSharp } from "react-icons/io5";
+import { useEffect, useState } from "react";
+import api, { BASE_URL } from "@/app/lib/axios";
 function Footer() {
+const [footerData,
+setFooterData] =
+useState([]);
+
+const [logoItem,
+setLogoItem] =
+useState(null);
+useEffect(() => {
+
+  const fetchFooter =
+    async () => {
+
+      try {
+
+        // FOOTER
+
+        const response =
+          await api.get(
+            `/api/comman/footer`
+          );
+
+        setFooterData(
+          response.data.data || []
+        );
+
+        // NAVBAR LOGO
+
+        const navbarRes =
+          await api.get(
+            `/api/comman/navbar`
+          );
+
+        const navbarItems =
+          navbarRes.data.data || [];
+
+        const logo =
+          navbarItems.find(
+
+            (item) =>
+              item.label ===
+              "LOGO"
+          );
+
+        setLogoItem(logo);
+
+      } catch (error) {
+
+        console.log(error);
+
+      }
+    };
+
+  fetchFooter();
+
+}, []);
+
   return (
     <div className=" shadow-2xl" >
 
@@ -16,7 +75,19 @@ function Footer() {
           
           <div className="lg:col-span-2 md:col-span-3">
 
-            <Image src="/Logo.png" height={250} width={250} alt="logo" />
+             {logoItem?.logo && (
+
+          <Image
+            src={`${BASE_URL}/uploads/${logoItem.logo}`}
+            alt="logo"
+            width={300}
+            height={200}
+            unoptimized
+            className="mb-5"
+          />
+
+        )}
+
 
             <p className="mt-4 text-black max-w-md text-sm leading-relaxed">
               Thinkbotic Technology Pvt. Ltd. delivers innovative e-commerce and

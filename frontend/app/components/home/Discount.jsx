@@ -4,11 +4,12 @@ import { useEffect, useState } from "react";
 import ProductCard from "./Card";
 import axios from "axios";
 import api, { BASE_URL } from "@/app/lib/axios";
+import Link from "next/link";
 export default function Discount() {
 const [products, setProducts] = useState([]);
 
   const [loading, setLoading] = useState(true);
-
+const [banners,setBanners]=useState([]);
 
   useEffect(() => {
 
@@ -62,9 +63,26 @@ const [products, setProducts] = useState([]);
       }
     };
 
+     const fetchBanner= async ()=>{
+    try{
+const res= await api.get("/api/admin/banner");
+console.log("banners",res.data.data);
+setBanners(res.data.data || [])
+    }
+    catch(error){
+console.log(error);
+    }
+  }
+fetchBanner();
     discountedProducts();
 
   }, []);
+
+const trBanner =
+  banners.find(
+    (item) =>
+      item.type === "trbanner"
+  );
 
 
   return (
@@ -80,40 +98,50 @@ const [products, setProducts] = useState([]);
 
           {/* BADGE */}
           <div className="absolute top-5 right-5 bg-primary-red text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
-            50% OFF
+            {trBanner?.priceText}
           </div>
 
           {/* TEXT */}
           <div className="z-10">
             <p className="text-lg sm:text-xl uppercase text-primary-red font-bold">
-              Flash Sale
-            </p>
+{
+  trBanner?.subtitle
+}            </p>
 
             <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold leading-tight mt-2">
-              Mega <br /> Discount
+        {trBanner?.title}
             </h2>
 
             <p className="text-sm mt-3 opacity-90 max-w-[250px]">
-              Limited time deals on top products. Shop before gone.
+              {trBanner?.description}
             </p>
           </div>
 
           {/* BUTTON */}
-          <button className="z-10 mt-6 bg-white text-primary-red px-6 py-3 rounded-full font-semibold w-fit hover:scale-105 transition">
-            Shop Now →
+         <Link href={
+    trBanner?.buttonLink ||
+    "/products"
+  }>
+          <button className="z-10 mt-0 bg-white text-primary-red px-6 py-3 rounded-full font-semibold w-fit hover:scale-105 transition">
+            {trBanner?.buttonText} →
           </button>
+         </Link>
 
           {/* IMAGE */}
           <div className="absolute right-[-10px] bottom-[-10px] w-[180px] sm:w-[220px] h-[180px] sm:h-[220px] rotate-[-10deg]">
-            <img
-              src="/product-1.jpg"
+       {
+        trBanner?.img && (
+               <img
+              src={`${BASE_URL}/uploads/${trBanner.img}`}
               alt="deal"
               className="object-contain w-full h-full drop-shadow-2xl"
             />
-          </div>
+      
+        )
+       }
 
         </div>
-
+</div>
         {/* RIGHT PRODUCTS */}
         <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6 lg:mt-0">
 

@@ -7,14 +7,14 @@ import { IoIosMail } from "react-icons/io";
 import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
-import api from "@/app/lib/axios";
+import api, { BASE_URL } from "@/app/lib/axios";
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
   const [cartCount, setCartCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const { user, loading } = useAuth();
-
+const [navbar,setNavbar]=useState([]);
   useEffect(() => {
     const fetchCounts = async () => {
       if (!user) {
@@ -26,6 +26,9 @@ function Navbar() {
       try {
         const cartResponse = await api.get("/api/user/cart");
         const wishlistResponse = await api.get("/api/user/wishlist");
+const NavbarItems=await api.get("/api/comman/navbar");
+console.log("Navbar",NavbarItems.data.data)
+setNavbar(NavbarItems.data.data || []);
 
         setCartCount(cartResponse.data.items?.length || 0);
         setWishlistCount(wishlistResponse.data?.length || 0);
@@ -38,7 +41,12 @@ function Navbar() {
 
     fetchCounts();
   }, [user]);
-
+const logoItem =
+  navbar.find(
+    (item) =>
+      item.label === "LOGO"
+  );
+  console.log("logo",logoItem)
   return (
     <div>  
       <div className="hidden md:flex border-b px-6 py-1 justify-between bg-gradient-blue-red text-white text-sm">
@@ -63,7 +71,23 @@ function Navbar() {
         <div className="flex items-center justify-between">
 
           {/* LEFT: LOGO */}
-         <Link href="/"> <Image src="/Logo.png" height={140} width={140} alt="logo" style={{ width: "auto", height: "auto" }} /></Link>
+         {/* <Link href="/"> <Image   src={`${BASE_URL}/uploads/${logoItem.logo}`} height={140} width={140} alt="logo" style={{ width: "auto", height: "auto" }} /></Link> */}
+         <Link href="/">
+
+  {logoItem?.logo && (
+
+    <Image
+      src={`${BASE_URL}/uploads/${logoItem.logo}`}
+      alt="logo"
+      width={180}
+      height={180}
+      unoptimized
+     
+    />
+
+  )}
+
+</Link>
 
           {/* DESKTOP SEARCH */}
          {/*  CENTER SEARCH */}

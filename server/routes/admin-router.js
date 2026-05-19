@@ -6,6 +6,7 @@ const authMiddleware = require("../middleware/auth-middleware");
 const adminMiddleware = require("../middleware/admin-middleware");
 const { uploadSingle, uploadMultiple } = require("../middleware/upload-middleware");
 const adminProductController = require("../controllers/admin-productController");
+const { addBanner, deleteBanner, getBanners, updateBanner } = require("../controllers/banner-Controller");
 
 const router = express.Router();
 
@@ -182,5 +183,8 @@ router.route("/cart-notifications")
 
 // ...existing code...
 
-
+router.route("/banner").post(authMiddleware,adminMiddleware,uploadSingle, addBanner)
+router.route("/banner").get( getBanners)
+router.route("/banner/:id").put(authMiddleware,adminMiddleware,uploadSingle,updateBanner)
+router.route("/banner/:id").delete(authMiddleware,adminMiddleware, deleteBanner )
 module.exports = router;
