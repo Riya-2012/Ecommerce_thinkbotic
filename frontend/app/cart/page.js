@@ -6,17 +6,29 @@ import { FaHeartBroken } from 'react-icons/fa';
 import Image from 'next/image';
 import api, { BASE_URL } from '../lib/axios';
 import { useRouter } from 'next/navigation';
+import { useCart }
+from "../context/CartContext";
 function page() {
     const [cart, setCart] = useState([]);
  const [qty, setQty] = useState(1);
 const [loading, setLoading] = useState(true);
 const router=useRouter();
+
+const {
+
+  cartItems,
+
+  removeFromCart,
+
+  setCartItems,
+
+} = useCart();
 // increase decrease qty
 
 const  handleIncrease = async (id) => {
-    const updatedCartItems = cart.map(item =>
+    const updatedCartItems = cartItems.map(item =>
       item.productId === id ? { ...item, quantity: (item.quantity || 1) + 1 } : item);
-    setCart(updatedCartItems);
+    setCartItems(updatedCartItems);
     await api.post(
       `api/user/cart/update`,
       { cartItems: updatedCartItems }
@@ -25,14 +37,14 @@ const  handleIncrease = async (id) => {
   };
 
   const handleDecrease = async (id) => {
-    const updatedCartItems = cart.map(item => {
+    const updatedCartItems = cartItems.map(item => {
       if (item.productId === id) {
         const newQuantity = Math.max((item.quantity || 1) - 1, 1);
         return { ...item, quantity: newQuantity };
       }
       return item;
     });
-    setCart(updatedCartItems);
+    setCartItems(updatedCartItems);
     await api.post(
       `api/user/cart/update`,
       { cartItems: updatedCartItems }
@@ -40,38 +52,38 @@ const  handleIncrease = async (id) => {
   };
 
 // fetch cart data
-  const fetchCartData = async () => {
-    try {
-      const response = await api.get(`api/user/cart`);
-      console.log("cart products", response.data);
-      setCart(response.data.items || []);
-      setLoading(false);
+//   const fetchCartData = async () => {
+//     try {
+//       const response = await api.get(`api/user/cart`);
+//       console.log("cart products", response.data);
+//       setCart(response.data.items || []);
+//       setLoading(false);
 
-    } catch (error) {
-      setLoading(false);
-      if (error.response && error.response.status === 401) {
-        // setShowLoginMessage(true);
-        setTimeout(() => {
-          router.push("/login");
-        }, 3000);
-      } else {
-        console.error("Error fetching cart data:", error);
-      }
-    }
-  };
-useEffect(()=>{
-  fetchCartData();
-},[]);
+//     } catch (error) {
+//       setLoading(false);
+//       if (error.response && error.response.status === 401) {
+//         // setShowLoginMessage(true);
+//         setTimeout(() => {
+//           router.push("/login");
+//         }, 3000);
+//       } else {
+//         console.error("Error fetching cart data:", error);
+//       }
+//     }
+//   };
+// useEffect(()=>{
+//   fetchCartData();
+// },[]);
 // remove
- const handleRemove = async (productId) => {
-    try {
+//  const handleRemove = async (productId) => {
+//     try {
      
-      await api.delete(`api/user/cart/remove/${productId}`);
-      setCart(cart.filter(item => item.productId !== productId));
-    } catch (error) {
-      console.error("Failed to remove item from cart:", error);
-    }
-  };
+//       await api.delete(`api/user/cart/remove/${productId}`);
+//       setCart(cart.filter(item => item.productId !== productId));
+//     } catch (error) {
+//       console.error("Failed to remove item from cart:", error);
+//     }
+//   };
     return (
 
 
@@ -90,7 +102,7 @@ useEffect(()=>{
                             <h1 className="text-2xl sm:text-3xl font-bold text-[#0f172a] flex items-center gap-3">
                                 My Cart
                                 <span className="text-sm font-medium bg-primary-red/10 text-primary-red px-3 py-1 rounded-full">
-                                    {cart.length} items
+                                    {cartItems.length} items
                                 </span>
                             </h1>
                         </div>
@@ -111,7 +123,7 @@ useEffect(()=>{
   {/*  LEFT SIDE  */}
   <div className="lg:col-span-2 flex flex-col gap-4">
 
-    {cart.map((item) => (
+    {cartItems.map((item) => (
       <div
         key={item.productId}
         className="bg-white p-4 rounded-2xl shadow-sm  flex flex-col sm:flex-row items-center justify-between gap-4"
@@ -183,7 +195,12 @@ useEffect(()=>{
 
           {/* REMOVE */}
           <button
-            onClick={() => handleRemove(item.productId)}
+           onClick={() =>
+
+  removeFromCart(
+    item.productId
+  )
+}
             className="text-red-500 text-sm font-medium"
           >
             Remove
@@ -205,7 +222,7 @@ useEffect(()=>{
 
    
     {(() => {
-      const subtotal = cart.reduce(
+      const subtotal = cartItems.reduce(
         (acc, item) => acc + item.price * (item.quantity || 1),
         0
       );

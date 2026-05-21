@@ -111,7 +111,25 @@ export default function ProductCard({
           >
             Add 
           </button> */}
-          <AddCart productId={id} />
+      <AddCart
+
+  product={{
+
+    _id: id,
+
+    image,
+
+    title,
+
+    category,
+
+    price,
+
+    oldPrice,
+
+    discount,
+  }}
+/>
 
           <button className="bg-gradient-blue-red text-white px-6 py-2 rounded-full text-xs font-medium shadow hover:opacity-90 transition"
             onClick={(e) => {

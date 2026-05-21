@@ -6,82 +6,22 @@ import { FaHeartBroken } from "react-icons/fa";
 import Link from "next/link";
 import api, { BASE_URL } from "../lib/axios";
 import toast from "react-hot-toast";
-
-
-// const initialWishlist = [
-//   {
-//     id: 1,
-//     image: "/product-1.jpg",
-//     title: "Smart Watch Elite",
-//     category: "Electronics",
-//     price: 2999,
-//     oldPrice: 3999,
-//     rating: 5,
-//   },
-//   {
-//     id: 2,
-//     image: "/product-2.jpg",
-//     title: "Pro Noise-Canceling Headphones",
-//     category: "Audio",
-//     price: 1299,
-//     oldPrice: 1999,
-//     rating: 4,
-//   },
-//   {
-//     id: 3,
-//     image: "/product-1.jpg",
-//     title: "Urban Sneakers X1",
-//     category: "Fashion",
-//     price: 1999,
-//     oldPrice: 2499,
-//     rating: 3,
-//   },
-// ];
-
-
+import { useWishlist } from "../context/WhishlistContext";
 
 export default function WishlistPage() {
 
+const {wishlistItems,
 
-  const [wishlistItems, setWishlistItems] = useState();
+        setWishlistItems,
+
+        addToWishlist,
+
+        removeFromWishlist} = useWishlist();
 
 
-const getWishlist = async()=>{
-  try{
-const response=await api.get(`api/user/wishlist`);
-console.log( "whislist products",response.data);
-   const formattedProducts = response.data.map((item) => ({
 
-          id: item._id,
 
-          image:  `${BASE_URL}/${item.img}`,
 
-          title: item.name,
-
-          category: item.category,
-
-          price: item.price,
-
-          oldPrice: item.oldPrice,
-
-          rating: Math.round(item.rating || 4),
-
-          discount: item.discount,
-
-          brand: item.Brand,
-
-        }));
-setWishlistItems(formattedProducts);
-  }
-  catch(error){
-    console.error("Error fetching wishlist:", error);
-  }
-}
-useEffect(()=>{
-  getWishlist();
-}, []);
-
-// remove from wishlist
   const handleRemoveFromWishlist = async (productId) => {
         try {
             await api.delete(`api/user/wishlist/${productId}`);
@@ -136,7 +76,11 @@ useEffect(()=>{
                 
             
                 <button 
-                  onClick={() => handleRemoveFromWishlist(item.id)}
+               onClick={() =>
+  removeFromWishlist(
+    item.id || item._id
+  )
+}
                   className="absolute top-3 left-3 bg-white/90 backdrop-blur text-gray-600 hover:text-white hover:bg-primary-red px-3 py-1.5 rounded-full text-xs font-bold shadow-sm opacity-0 group-hover:opacity-100 transition duration-300 z-10"
                 >
                   Remove

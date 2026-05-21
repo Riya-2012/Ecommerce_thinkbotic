@@ -6,6 +6,8 @@ import CatNavbar from "./components/Layouts/CatNavbar";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
 import 'animate.css';
+import { CartProvider } from "./context/CartContext";
+import { WishlistProvider } from "./context/WhishlistContext";
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -30,11 +32,16 @@ export default function RootLayout({ children }) {
       <body className="min-h-full flex flex-col" suppressHydrationWarning>
 
         <AuthProvider>
+           <CartProvider>
+
+    <WishlistProvider>  
           <Navbar />
         <CatNavbar />
         <Toaster position="top-right" />
         {children}
         <Footer />
+        </WishlistProvider>
+        </CartProvider>
         </AuthProvider>
         </body>
     </html>

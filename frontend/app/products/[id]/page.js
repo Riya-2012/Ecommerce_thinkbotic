@@ -596,7 +596,10 @@ const imageUrl = selectedImage
       </div>
 
       {/* faq */}
-      <div>
+    {
+product.quesAns && product.quesAns.length > 0   &&(
+
+    <div>
         <div className="max-w-[1400px] mx-auto px-4 lg:px-10 py-10">
 
           <div className="relative">
@@ -647,11 +650,17 @@ const imageUrl = selectedImage
           </div>
         </div>
       </div>
+)
+
+    }
 
 
 
       {/* CUSTOMER REVIEWS SECTION */}
-      <div id="reviews" className="max-w-[1400px] mx-auto px-4 lg:px-10 py-12">
+    {
+product.reviews && product.reviews.length>0 &&(
+
+    <div id="reviews" className="max-w-[1400px] mx-auto px-4 lg:px-10 py-12">
         <div className="relative flex items-center justify-between mb-8">
           <h2 className="text-2xl lg:text-3xl font-bold text-gray-900">Customer Reviews</h2>
 
@@ -741,6 +750,9 @@ const imageUrl = selectedImage
           </div>
         </div>
       </div>
+)
+
+    }
 
       {/* similiar product */}
       <div className="max-w-[1400px] mx-auto px-0  lg:px-10 py-12">

@@ -8,39 +8,48 @@ import Image from "next/image";
 import Link from "next/link";
 import { useAuth } from "@/app/context/AuthContext";
 import api, { BASE_URL } from "@/app/lib/axios";
+import { useWishlist } from "@/app/context/WhishlistContext";
+import { useCart } from "@/app/context/CartContext";
+
 
 function Navbar() {
   const [menuOpen, setMenuOpen] = useState(false);
-  const [cartCount, setCartCount] = useState(0);
-  const [wishlistCount, setWishlistCount] = useState(0);
+  
+  // const [wishlistCount, setWishlistCount] = useState(0);
   const { user, loading } = useAuth();
+  const {cartCount}=useCart();
+const {wishlistCount}=useWishlist();
 const [navbar,setNavbar]=useState([]);
-  useEffect(() => {
-    const fetchCounts = async () => {
-      if (!user) {
-        setCartCount(0);
-        setWishlistCount(0);
-        return;
-      }
+useEffect(() => {
+
+  const fetchNavbar =
+    async () => {
 
       try {
-        const cartResponse = await api.get("/api/user/cart");
-        const wishlistResponse = await api.get("/api/user/wishlist");
-const NavbarItems=await api.get("/api/comman/navbar");
-console.log("Navbar",NavbarItems.data.data)
-setNavbar(NavbarItems.data.data || []);
 
-        setCartCount(cartResponse.data.items?.length || 0);
-        setWishlistCount(wishlistResponse.data?.length || 0);
+        const NavbarItems =
+          await api.get(
+            "/api/comman/navbar"
+          );
+
+        console.log(
+          "Navbar",
+          NavbarItems.data.data
+        );
+
+        setNavbar(
+          NavbarItems.data.data || []
+        );
+
       } catch (error) {
-        console.error("Error fetching counts:", error);
-        setCartCount(0);
-        setWishlistCount(0);
+
+        console.log(error);
       }
     };
 
-    fetchCounts();
-  }, [user]);
+  fetchNavbar();
+
+}, []);
 const logoItem =
   navbar.find(
     (item) =>

@@ -128,3 +128,100 @@
 
 /* FLOAT ANIMATION */
 
+/* LEFT BANNER */
+
+/* TEXT */
+
+/* .slide-title {
+
+  animation:
+    fadeUp 1s ease;
+}
+
+.slide-price {
+
+  animation:
+    fadeUp 1.2s ease;
+}
+
+.slide-btn {
+
+  animation:
+    fadeUp 1.4s ease;
+}
+
+@keyframes fadeUp {
+
+  0% {
+
+    opacity: 0;
+
+    transform:
+      translateY(30px);
+  }
+
+  100% {
+
+    opacity: 1;
+
+    transform:
+      translateY(0);
+  }
+}
+
+
+
+.slide-left {
+
+  animation:
+    slideFromLeft 0.8s ease;
+}
+
+
+
+.slide-right {
+
+  animation:
+    slideFromRight 0.8s ease;
+}
+
+
+@keyframes slideFromLeft {
+
+  0% {
+
+    opacity: 0;
+
+    transform:
+      translateX(-100px);
+  }
+
+  100% {
+
+    opacity: 1;
+
+    transform:
+      translateX(0);
+  }
+}
+
+
+
+@keyframes slideFromRight {
+
+  0% {
+
+    opacity: 0;
+
+    transform:
+      translateX(100px);
+  }
+
+  100% {
+
+    opacity: 1;
+
+    transform:
+      translateX(0);
+  }
+} */

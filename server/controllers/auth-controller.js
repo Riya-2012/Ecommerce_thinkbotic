@@ -113,11 +113,11 @@ const verifyOtp = async (req, res) => {
     if (user) {
       // User exists, generate JWT and return user data
       const token = await user.generateToken();
-    res.cookie("token", token, {
+
+  res.cookie("token", token, {
   httpOnly: true,
   sameSite: "lax",
-  maxAge: 60 * 60 * 1000,
-
+  maxAge:   7 * 24 * 60 * 60 * 1000,
 });
 
       
