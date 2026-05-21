@@ -13,7 +13,7 @@ export default function EditProductPage() {
 
   useEffect(() => {
     api
-      .get(`api/admin/productpage/${id}`)
+      .get(`/api/admin/productpage/${id}`)
       .then((res) => setProduct(res.data))
       .catch(() => {/* toast handled inside ProductForm or here */})
       .finally(() => setLoading(false));

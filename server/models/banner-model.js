@@ -8,7 +8,8 @@ new mongoose.Schema({
     type: String,
     enum: [
       "main",
-      "side",
+      "side1",
+      "side2",
       "trbanner",
     ],
     required: true,

@@ -7,6 +7,7 @@ import api, {
   BASE_URL,
 } from "@/app/lib/axios";
 
+
 import Link from "next/link";
 
 import {
@@ -48,12 +49,16 @@ const mainBanner =
       item.type === "main"
   );
 
-const sideBanners =
+const sideBanner1 =
   banners.filter(
     (item) =>
-      item.type === "side"
+      item.type === "side1"
   );
-
+const sideBanner2 =
+  banners.filter(
+    (item) =>
+      item.type === "side2"
+  );
   console.log("banners title",mainBanner?.title);
   return (
     <div className="w-full bg-[#f8fafc] py-8 px-4 lg:px-10">
@@ -70,8 +75,8 @@ const sideBanners =
       Pagination,
     ]}
     autoplay={{
-      delay: 2000,
-      disableOnInteraction: false,
+      delay: 4000,
+      // disableOnInteraction: false,
     }}
     pagination={{
       clickable: true,
@@ -186,15 +191,34 @@ const sideBanners =
 </div>
 
         {/* RIGHT SIDE */}
-     <div className="min-h-[420px] md:min-h-[300px] flex flex-col md:flex-row lg:flex-col gap-6">
+     <div className="min-h-[420px] md:min-h-[300px] flex flex-col md:flex-row lg:flex-col gap-6 overflow-hidden">
+ <Swiper
+    modules={[
+      Autoplay,
+      Pagination,
+    ]}
+    autoplay={{
+      delay: 4000,
+      // disableOnInteraction: false,
+    }}
+    pagination={{
+      clickable: true,
+    }}
+    loop={true}
+    className="rounded-3xl overflow-hidden w-full"
+  >
 
-  {sideBanners
-    .slice(0, 2)
+  {sideBanner2
+  
     .map((banner) => (
+ <SwiperSlide
+          key={banner._id}
+          className="h-full"
+        >  
 
       <div
-        key={banner._id}
-        className="relative flex-1 rounded-3xl overflow-hidden"
+       
+        className="relative flex-1 rounded-3xl min-h-[200px] overflow-hidden animate__animated animate__fadeInLeft group cursor-pointer"
       >
 
         {banner.img && (
@@ -204,7 +228,7 @@ const sideBanners =
             alt={banner.title}
             fill
             unoptimized
-            className="object-cover"
+         className="object-cover transition-all duration-700 group-hover:scale-110 group-hover:rotate-2"
           />
 
         )}
@@ -218,14 +242,14 @@ const sideBanners =
             {banner.subtitle}
 
           </p>
-
-          <h2 className="text-lg sm:text-xl font-semibold">
+     <h2 className="text-lg sm:text-xl font-semibold animate__animated animate__zoomIn animate__delay-1s">
 
             {banner.title}
 
           </h2>
 
-          <p className="text-sm mt-1">
+
+         <p className="text-sm mt-1 animate__animated animate__fadeInUp animate__delay-1s">
 
             {banner.priceText}
 
@@ -238,7 +262,7 @@ const sideBanners =
             }
           >
 
-            <button className="mt-3 bg-white text-primary-blue px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-blue hover:text-white transition">
+            <button className="mt-3 bg-white text-primary-blue px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-blue hover:text-white hover:scale-105 transition-all duration-300 shadow-lg animate__animated animate__fadeInUp animate__delay-2s">
 
               {banner.buttonText ||
                 "Shop Now"}
@@ -250,9 +274,89 @@ const sideBanners =
         </div>
 
       </div>
+ </SwiperSlide>
+    ))}
+</Swiper>
 
+ <Swiper
+    modules={[
+      Autoplay,
+      Pagination,
+    ]}
+    autoplay={{
+      delay: 4000,
+      // disableOnInteraction: false,
+    }}
+    pagination={{
+      clickable: true,
+    }}
+    loop={true}
+    className="rounded-3xl overflow-hidden w-full"
+  >  
+
+    {sideBanner1
+   
+    .map((banner) => (
+<SwiperSlide
+          key={banner._id}
+          className="h-full"
+        >  
+      <div
+      
+        className="relative flex-1 min-h-[200px] rounded-3xl overflow-hidden animate__animated  animate__fadeInRight group cursor-pointer"
+      >
+        {banner.img && (
+          <Image
+            src={`${BASE_URL}/uploads/${banner.img}`}
+            alt={banner.title}
+            fill
+            unoptimized
+         className="object-cover transition-all duration-700 group-hover:scale-105 group-hover:-rotate-2"
+          />
+
+        )}
+        <div className="absolute inset-0 bg-black/40"></div>
+
+      <div className="absolute bottom-6 left-6 text-white z-10">
+
+        <p className="text-xs opacity-80 animate__animated animate__fadeInUp">
+
+            {banner.subtitle}
+
+          </p>
+
+      <h2 className="text-lg sm:text-xl font-semibold animate__animated animate__zoomIn animate__delay-1s">
+
+            {banner.title}
+
+          </h2>
+
+        <p className="text-sm mt-1 animate__animated animate__fadeInUp animate__delay-1s">
+
+            {banner.priceText}
+
+          </p>
+        <Link
+            href={
+              banner.buttonLink ||
+              "/products"
+            }
+          >
+            <button className="mt-3 bg-white text-primary-blue px-4 py-2 rounded-full text-sm font-medium hover:bg-primary-blue hover:text-white hover:scale-105 transition-all duration-300 shadow-lg animate__animated animate__fadeInUp animate__delay-2s">
+
+              {banner.buttonText || "Shop Now"}
+
+            </button>
+
+          </Link>
+
+        </div>
+
+      </div>
+</SwiperSlide>
     ))}
 
+</Swiper>
 </div>
       </div>
     </div>

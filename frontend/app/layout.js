@@ -5,7 +5,7 @@ import Footer from "./components/Layouts/Footer";
 import CatNavbar from "./components/Layouts/CatNavbar";
 import { Toaster } from "react-hot-toast";
 import { AuthProvider } from "./context/AuthContext";
-
+import 'animate.css';
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],

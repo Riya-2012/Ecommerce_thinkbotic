@@ -222,9 +222,15 @@ export default function AdminBannerPage() {
 
                 </option>
 
-                <option value="side">
+                <option value="side1">
 
-                  Side Banner
+                  Side banner 1
+
+                </option>
+                
+                <option value="side2">
+
+                  Side banner 2
 
                 </option>
                   <option value="trbanner">

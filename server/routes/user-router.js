@@ -2,6 +2,7 @@ const express = require("express");
 const userController = require("../controllers/User-Controller");
 const authMiddleware = require("../middleware/auth-middleware");
 const adminMiddleware = require("../middleware/admin-middleware");
+const { addRecentlyViewed, getRecentlyViewed } = require("../controllers/recently-ViewedController");
 
 const router = express.Router();
 
@@ -54,7 +55,9 @@ router.get("/order/:orderId", authMiddleware, userController.getOrderById);
 router.post("/product/:productId/rate", authMiddleware, userController.rateProduct);
 router.get("/product/:productId/my-rating", authMiddleware, userController.getMyProductRating);
 router.get("/my-reviews", authMiddleware, userController.getMyReviews);
-
+// recently viewed
+router.post("/recentlyViewed",authMiddleware,addRecentlyViewed);
+router.get("/recentlyViewed",authMiddleware,getRecentlyViewed);
 
 
 

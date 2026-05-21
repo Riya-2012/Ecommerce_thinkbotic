@@ -45,7 +45,7 @@ export default function ProductCard({
   className="
     w-full
     h-full
-    object-cover
+    object-contain
     group-hover:scale-110
     transition duration-500
   "

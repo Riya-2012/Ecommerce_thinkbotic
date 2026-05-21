@@ -117,7 +117,7 @@ function Footer() {
 
       {/* MAIN FOOTER */}
 
-      <div className="px-6 lg:px-12 py-12 shadow-md">
+      <div className="px-6  lg:px-12 py-12 shadow-md">
 
         {/* GRID */}
 

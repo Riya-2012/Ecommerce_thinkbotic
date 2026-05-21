@@ -97,7 +97,7 @@ export default function Page() {
           return;
 
         await api.delete(
-          `/api/admin/products/delete/${id}`
+          `/api/admin/productpage/${id}`
         );
 
         toast.success(

@@ -312,9 +312,14 @@ export default function EditBannerPage() {
 
                 </option>
 
-                <option value="side">
+                <option value="side1">
 
-                  Side Banner
+                  Side Banner 1
+
+                </option>
+                <option value="side2">
+
+                  Side Banner 2
 
                 </option>
 

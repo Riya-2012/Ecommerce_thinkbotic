@@ -206,23 +206,107 @@ const getProductCards = async (req, res) => {
   }
 };
 
-const getTopDiscountedProducts = async (req, res) => {
-  try {
-    const products = await ProductPage.aggregate([
-      {
-        $addFields: {
-          discount: { $subtract: ["$oldPrice", "$price"] }
-        }
-      },
-      { $sort: { discount: -1 } },
-      { $limit: 4 }
-    ]);
-    return res.status(200).json(products);
-  } catch (error) {
-    console.error("Error fetching top discounted products:", error);
-    return res.status(500).json({ error: "Failed to fetch top discounted products" });
-  }
-};
+const getTopDiscountedProducts =
+  async (req, res) => {
+
+    try {
+
+      const products =
+        await ProductPage.aggregate([
+
+          {
+            $addFields: {
+
+              discount: {
+
+                $round: [
+
+                  {
+
+                    $multiply: [
+
+                      {
+
+                        $divide: [
+
+                          {
+
+                            $subtract: [
+
+                              "$oldPrice",
+                              "$price"
+                            ]
+
+                          },
+
+                          "$oldPrice"
+                        ]
+                      },
+
+                      100
+                    ]
+                  },
+
+                  0
+                ]
+              }
+            }
+          },
+
+          // REMOVE INVALID
+
+          {
+            $match: {
+
+              oldPrice: {
+                $gt: 0
+              },
+
+              discount: {
+                $gt: 0
+              }
+            }
+          },
+
+          // HIGHEST FIRST
+
+          {
+            $sort: {
+              discount: -1
+            }
+          },
+
+          // LIMIT
+
+          {
+            $limit: 4
+          }
+
+        ]);
+
+      return res.status(200).json({
+
+        success: true,
+
+        data: products,
+      });
+
+    } catch (error) {
+
+      console.error(
+        "Error fetching top discounted products:",
+        error
+      );
+
+      return res.status(500).json({
+
+        success: false,
+
+        error:
+          "Failed to fetch top discounted products",
+      });
+    }
+  };
 
 
 // Exporting controllers

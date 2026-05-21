@@ -7,6 +7,7 @@ import Product from "./components/home/Product";
 import Slider from "./components/home/Slider";
 import TopRatedProducts from "./components/home/TopRated";
 import ContactForm from "./components/Layouts/ContactForm";
+import RecentlyViewed from "./components/home/RecentlyViewed";
 
 export default function Home() {
   return (
@@ -18,6 +19,7 @@ export default function Home() {
       <Categories />
 <Product />
 <CollectionsSection />
+<RecentlyViewed />
 <TopRatedProducts />
 <DealsSection />
 <ContactForm />

@@ -13,7 +13,7 @@ export default function DuplicateProductPage() {
 
   useEffect(() => {
     api
-      .get(`api/admin/productpage/${id}`)
+      .get(`/api/admin/productpage/${id}`)
       .then((res) => {
         const data = res.data;
 

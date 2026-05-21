@@ -452,11 +452,26 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
 
     try {
       if (isEdit) {
-        await api.put(`api/admin/products/${productId}`, fd);
+        await api.put(`/api/admin/productpage/${productId}`, fd
+
+          ,{
+    headers: {
+      "Content-Type":
+        "multipart/form-data",
+    },
+  }
+        );
         toast.success("Product updated successfully!");
       } else {
         // both "add" and "duplicate" POST to the same endpoint
-        await api.post("api/admin/productpage", fd);
+        await api.post("/api/admin/productpage", fd,
+            {
+    headers: {
+      "Content-Type":
+        "multipart/form-data",
+    },
+  }
+        );
         toast.success(isDuplicate ? "Product duplicated successfully!" : "Product added successfully!");
       }
 
@@ -739,13 +754,44 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                     </div>
                   )}
                 </label>
-                <input id="mainImage" type="file" accept="image/*" className="hidden"
-                  {...register("img", {
-                    required: (!isEdit && !isColorWise) ? "Main image is required" : false,
-                    validate: (!isEdit || formData.img) ? validateImage : undefined,
-                  })}
-                  onChange={handleFileChange}
-                />
+               <input
+  id="mainImage"
+  type="file"
+  accept="image/*"
+  className="hidden"
+
+  {...register("img", {
+
+    required:
+      (!isEdit &&
+       !isDuplicate &&
+       !existingImgUrl &&
+       !isColorWise)
+        ? "Main image is required"
+        : false,
+
+    validate: async (files) => {
+
+      // IF EXISTING IMAGE PRESENT
+      // SKIP VALIDATION
+
+      if (
+        existingImgUrl ||
+        mainImagePreview
+      ) {
+        return true;
+      }
+
+      return validateImage(files);
+    },
+
+    onChange: (e) => {
+
+      handleFileChange(e);
+    },
+
+  })}
+/>
                 {errors.img && <p className="text-xs text-red-500 font-medium mt-2">{errors.img.message}</p>}
               </div>
             </div>

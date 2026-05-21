@@ -84,6 +84,72 @@ useEffect(() => {
 
 }, [id]);
 
+useEffect(() => {
+
+  if (!product?._id)
+    return;
+
+
+
+  // LOGIN USER
+
+  if (user) {
+
+    api.post(
+
+      "/api/user/recentlyViewed",
+
+      {
+        productId:
+          product._id,
+      }
+    );
+  }
+
+  // GUEST USER
+
+  else {
+
+    let recent =
+      JSON.parse(
+
+        localStorage.getItem(
+          "recentlyViewed"
+        )
+
+      ) || [];
+
+    // REMOVE DUPLICATE
+
+    recent =
+      recent.filter(
+
+        (item) =>
+          item._id !==
+          product._id
+      );
+
+    // ADD START
+
+    recent.unshift(product);
+
+    // LIMIT
+
+    recent =
+      recent.slice(0, 10);
+
+    localStorage.setItem(
+
+      "recentlyViewed",
+
+      JSON.stringify(
+        recent
+      )
+    );
+  }
+
+}, [product]);
+
 const currentImageSet =
   product.images?.[selectedColorIdx]?.imageSet
   || [product.img];

@@ -141,6 +141,7 @@ const createProductPage = async (req, res, next) => {
             subCategory: req.body.subCategory,
             price: req.body.price,
             oldPrice: req.body.oldPrice,
+            discount: req.body.discount,
             gst: req.body.gst,
             stock: req.body.stock !== undefined ? Number(req.body.stock) : 50,
             stockStatus:
@@ -284,7 +285,7 @@ const updateProductPageById = async (req, res, next) => {
         // Copy all simple fields from req.body
         const allowedFields = [
             "name", "Brand", "priceAlert", "descriptions", "category", "subCategory",
-            "price", "oldPrice", "gst", "metaTitle", "metaDescription", "metaKeywords",
+            "price", "oldPrice","discount", "gst", "metaTitle", "metaDescription", "metaKeywords",
             "productDescription", "specifications", "warranty", "quesAns", "otherinfo",
             "offers", "otherinfoText"
         ];
