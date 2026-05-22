@@ -6,13 +6,15 @@ const ProductPage = require("../models/productPage-model");
 const Order = require("../models/order-model");
 const CartConfig = require("../models/pricing-model");
 
-const Razorpay = require("razorpay");
-const razorpay = new Razorpay({
-  key_id: "rzp_test_EIiCOx00HCTIgi",
-  key_secret: "nzXPcqAX7uANKo84SXvfI3kr",
-});
 
+// const Cashfree =require("../services/CashFree")
 // Get all addresses for a user
+// ✅ v3 style
+const { Cashfree } = require("cashfree-pg");
+
+Cashfree.XClientId = process.env.KEY_ID;
+Cashfree.XClientSecret = process.env.KEY_SECRET;
+Cashfree.XEnvironment = Cashfree.Environment.SANDBOX;
 
 const getAllAddresses = async (req, res, next) => {
   try {
@@ -330,26 +332,76 @@ const removeFromWishlist = async (req, res) => {
 };
 
 // Create Razorpay order (for frontend to get order_id)
-const createRazorpayOrder = async (req, res) => {
+// const createRazorpayOrder = async (req, res) => {
    
+//   try {
+//     const { amount } = req.body;
+//     if (!amount) {
+//       return res.status(400).json({ error: "Amount is required" });
+//     }
+//     const options = {
+//       amount: Math.round(amount * 100), 
+//       currency: "INR",
+//       receipt: "order_rcptid_" + Date.now(),
+//     };
+//     const order = await razorpay.orders.create(options);
+//     res.json(order);
+//   } catch (error) {
+//     console.error("Razorpay order error:", error); 
+//  res.status(500).json({
+//   error: error.message
+// });
+// console.error(error);
+//   }
+// };
+
+
+
+const createCashfreeOrder = async (req, res) => {
   try {
-    const { amount } = req.body;
-    if (!amount) {
-      return res.status(400).json({ error: "Amount is required" });
-    }
-    const options = {
-      amount: Math.round(amount * 100), // amount in paise
-      currency: "INR",
-      receipt: "order_rcptid_" + Date.now(),
-    };
-    const order = await razorpay.orders.create(options);
-    res.json(order);
+    const { amount, customerName, customerEmail, customerPhone } = req.body;
+    console.log("Amount received:", amount);
+const response = await Cashfree.PGCreateOrder("2023-08-01", {
+      order_id: `order_${Date.now()}`,
+       order_amount: Number(Number(amount).toFixed(2)),
+      order_currency: "INR",
+      customer_details: {
+        customer_id: `cust_${Date.now()}`,
+        customer_name: customerName,
+        customer_email: customerEmail,
+        customer_phone: String(customerPhone),
+      },
+      order_meta: {
+        return_url: `http://localhost:5173/cart/payment-success?order_id={order_id}`,
+      },
+    });
+
+    return res.status(200).json({
+      success: true,
+      paymentSessionId: response.data.payment_session_id,
+      orderId: response.data.order_id,
+    });
+
   } catch (error) {
-    console.error("Razorpay order error:", error); // <--- Add this line
- res.status(500).json({
-  error: error.message
-});
-console.error(error);
+    console.log("Cashfree Error:", error.response?.data || error.message);
+    return res.status(500).json({
+      success: false,
+      error: error.response?.data || error.message,
+    });
+  }
+};
+
+const verifyPayment = async (req, res) => {
+  try {
+    const { orderId } = req.params;
+
+    const response = await  Cashfree.PGFetchOrder("2023-08-01", orderId); // ✅ instance method
+
+    res.status(200).json({ success: true, data: response.data });
+
+  } catch (error) {
+    console.log(error);
+    res.status(500).json({ success: false, message: error.message });
   }
 };
 
@@ -358,11 +410,7 @@ const createOrder = async (req, res) => {
 
   try {
     const { userId, shippingAddress, billingAddress, items, orderSummary, payment } = req.body;
-    // const safePayment = {
-    //   ...payment,
-    //   pricingDetails: Array.isArray(payment?.pricingDetails) ? payment.pricingDetails : [],
-    //   appliedCoupon: payment?.appliedCoupon || null,
-    // };
+
 const safePayment = {
       ...(payment || {}),
       pricingDetails: Array.isArray(payment?.pricingDetails)
@@ -397,14 +445,14 @@ const safePayment = {
       billingAddress,
       items: items.map(item => ({
         ...item,
-        imageColor: item.imageColor // <-- Make sure this is present
+        imageColor: item.imageColor 
       })),
       orderSummary,
       payment: safePayment
     });
     await order.save();
 
-    // Remove all items from user's cart after successful order
+   
     await Cart.findOneAndUpdate(
       { userId },
       { $set: { items: [] } }
@@ -467,7 +515,7 @@ const rateProduct = async (req, res) => {
       return res.status(400).json({ error: "Rating must be between 1 and 5" });
     }
 
-    const product = await ProductPage.findById(productId).populate("reviews.userId", "firstname lastname email username");
+    const product = await ProductPage.findById(productId);
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     // Remove previous rating by this user if exists
@@ -501,7 +549,8 @@ const getMyProductRating = async (req, res) => {
     const { productId } = req.params;
     const userId = req.user._id;
 
-    const product = await ProductPage.findById(productId);
+    const product = await ProductPage.findById(productId)
+    ;
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     const userReview = product.reviews.find(
@@ -542,8 +591,6 @@ const getMyReviews = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch user reviews" });
   }
 };
-
-
 
 const getCartConfig = async (req, res) => {
   try {
@@ -600,10 +647,12 @@ module.exports = {
   addToWishlist,
   removeFromWishlist,
 
+  createCashfreeOrder,
+  verifyPayment,
   createOrder,
   getOrdersByUser,
   getOrderById,
-  createRazorpayOrder,
+ 
 
   rateProduct,
   getMyProductRating,

@@ -1,7 +1,9 @@
 "use client";
 
+import api from "@/app/lib/axios";
 import Image from "next/image";
 import Link from "next/link";
+import { useEffect, useState } from "react";
 
 import {
   FaBoxOpen,
@@ -11,43 +13,65 @@ import {
   FaSearch,
 } from "react-icons/fa";
 
-const orders = [
-  {
-    id: "#ORD10245",
-    image: "/product-1.jpg",
-    title: "Smart Watch Elite",
-    category: "Electronics",
-    price: 2999,
-    qty: 1,
-    status: "Delivered",
-    payment: "Paid",
-    date: "12 May 2026",
-  },
-  {
-    id: "#ORD10246",
-    image: "/product-2.jpg",
-    title: "Wireless Headphones",
-    category: "Audio",
-    price: 1999,
-    qty: 2,
-    status: "Shipped",
-    payment: "Paid",
-    date: "15 May 2026",
-  },
-  {
-    id: "#ORD10247",
-    image: "/product-3.jpg",
-    title: "Running Shoes",
-    category: "Fashion",
-    price: 2499,
-    qty: 1,
-    status: "Processing",
-    payment: "COD",
-    date: "18 May 2026",
-  },
-];
+// const orders = [
+//   {
+//     id: "#ORD10245",
+//     image: "/product-1.jpg",
+//     title: "Smart Watch Elite",
+//     category: "Electronics",
+//     price: 2999,
+//     qty: 1,
+//     status: "Delivered",
+//     payment: "Paid",
+//     date: "12 May 2026",
+//   },
+//   {
+//     id: "#ORD10246",
+//     image: "/product-2.jpg",
+//     title: "Wireless Headphones",
+//     category: "Audio",
+//     price: 1999,
+//     qty: 2,
+//     status: "Shipped",
+//     payment: "Paid",
+//     date: "15 May 2026",
+//   },
+//   {
+//     id: "#ORD10247",
+//     image: "/product-3.jpg",
+//     title: "Running Shoes",
+//     category: "Fashion",
+//     price: 2499,
+//     qty: 1,
+//     status: "Processing",
+//     payment: "COD",
+//     date: "18 May 2026",
+//   },
+// ];
+
+
+
 
 export default function Page() {
+  const [orders, setOrders] = useState([]);
+    useEffect(() => {
+    const fetchOrders = async () => {
+      try {
+        const res = await api.get(`api/user/orders`);
+        const data = await res.json();
+        if (Array.isArray(data)) {
+          setOrders(data);
+        } else {
+          setOrders([]); 
+        }
+      } catch (err) {
+        setOrders([]); 
+        console.error("Failed to fetch orders", err);
+      }
+    };
+    fetchOrders();
+  }, [token]);
+
 
   return (
     <div className="space-y-8">

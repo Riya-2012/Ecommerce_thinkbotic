@@ -28,7 +28,7 @@ router.route('/cart').post(authMiddleware, userController.addToCart);
 router.route("/cart/remove/:productId").delete(authMiddleware, userController.removeFromCart);
 router.route('/cart/update').post(authMiddleware, userController.updateCart);
 
-// pricing-userController.getCartConfig
+// pricing-userController. 
 
 router.get("/cart-config", authMiddleware, userController.getCartConfig); // For all users
 router.post("/cart-config", authMiddleware, adminMiddleware, userController.updateCartConfig);
@@ -43,10 +43,11 @@ router.route('/wishlist/:productId').delete(authMiddleware, userController.remov
 /*=================================
           .Order Routes
 ====================================*/
+router.post("/create-order", authMiddleware, userController.createCashfreeOrder);
+router.get("/verify-order/:orderId", authMiddleware, userController.verifyPayment)
 router.post("/order", authMiddleware, userController.createOrder);
 router.get("/orders", authMiddleware, userController.getOrdersByUser);
 
-router.post("/create-order", authMiddleware, userController.createRazorpayOrder);
 router.get("/order/:orderId", authMiddleware, userController.getOrderById);
 
 /*=================================
