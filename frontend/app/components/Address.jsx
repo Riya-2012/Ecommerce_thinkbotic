@@ -15,7 +15,7 @@ import api from "../lib/axios";
 import toast from "react-hot-toast";
 
 
-function Address() {
+function Address({ onContinueToPayment }) {
 
     const [addresses, setAddresses] = useState([]);
     const [selectedShippingId, setSelectedShippingId] = useState(null);
@@ -27,9 +27,7 @@ function Address() {
     const [editedAddress, setEditedAddress] = useState({});
 
     useEffect(() => {
-        if (billingSameAsShipping) {
-            setSelectedBillingId(selectedShippingId);
-        }
+        // Explicit selection for shipping and billing is now handled by the user via the unified address list.
     }, [selectedShippingId, billingSameAsShipping]);
 
     const { user } = useAuth();
@@ -87,15 +85,17 @@ function Address() {
             };
             await api.post(`/api/user/addresses`, shippingPayload);
 
-            if (!billingSameAsShipping) {
-                const billingPayload = {
-                    userId, type: "Billing",
-                    fullName: data.b_fullName, mobile: data.b_mobile,
-                    address: data.b_address, street: data.b_street,
-                    city: data.b_city, state: data.b_state, zipCode: data.b_zipCode,
-                };
-                await api.post(`/api/user/addresses`, billingPayload);
-            }
+            const billingPayload = {
+                userId, type: "Billing",
+                fullName: billingSameAsShipping ? data.fullName : data.b_fullName,
+                mobile: billingSameAsShipping ? data.mobile : data.b_mobile,
+                address: billingSameAsShipping ? data.address : data.b_address,
+                street: billingSameAsShipping ? data.street : data.b_street,
+                city: billingSameAsShipping ? data.city : data.b_city,
+                state: billingSameAsShipping ? data.state : data.b_state,
+                zipCode: billingSameAsShipping ? data.zipCode : data.b_zipCode,
+            };
+            await api.post(`/api/user/addresses`, billingPayload);
 
             toast.success("Address saved successfully");
             reset();
@@ -184,129 +184,82 @@ function Address() {
                             {addresses.length > 0 && !isAddingAddress && (
                                 <div className="space-y-5 animate-in fade-in duration-300">
 
-                                    {/* SHIPPING SELECTION */}
-                                    <h3 className="font-semibold text-gray-800 text-lg">Select Delivery Address</h3>
+                                    {/* UNIFIED ADDRESS LIST */}
+                                    <h3 className="font-semibold text-gray-800 text-lg">Select Delivery & Billing Addresses</h3>
                                     <div className="grid grid-cols-1 gap-4">
-                                        {addresses.map(addr => (
+                                        {addresses.map(addr => {
+                                            const isBillingType = addr.shipping.type === 'Billing';
+                                            const isSelected = isBillingType ? selectedBillingId === addr.id : selectedShippingId === addr.id;
+                                            
+                                            return (
                                             <div
                                                 key={addr.id}
-                                                className={`rounded-2xl border transition-all ${selectedShippingId === addr.id ? 'border-primary-blue bg-blue-50/40 ring-1 ring-primary-blue shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}`}
+                                                className={`rounded-2xl border transition-all ${isSelected ? (isBillingType ? 'border-primary-red bg-red-50/10 shadow-sm ring-1 ring-primary-red/30' : 'border-primary-blue bg-blue-50/10 shadow-sm ring-1 ring-primary-blue/30') : 'border-gray-200 bg-white hover:border-gray-300'}`}
                                             >
                                                 {editingAddressId === addr.id ? (
                                                     /* EDIT FORM */
                                                     <div className="p-5">
                                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                                                            <input value={editedAddress.fullName || ""} onChange={(e) => setEditedAddress({ ...editedAddress, fullName: e.target.value })} placeholder="Full Name" className="border border-gray-300 px-3 py-2 rounded-lg" />
-                                                            <input value={editedAddress.mobile || ""} onChange={(e) => setEditedAddress({ ...editedAddress, mobile: e.target.value })} placeholder="Mobile" className="border border-gray-300 px-3 py-2 rounded-lg" />
-                                                            <input value={editedAddress.address || ""} onChange={(e) => setEditedAddress({ ...editedAddress, address: e.target.value })} placeholder="Address" className="border border-gray-300 px-3 py-2 rounded-lg md:col-span-2" />
-                                                            <input value={editedAddress.street || ""} onChange={(e) => setEditedAddress({ ...editedAddress, street: e.target.value })} placeholder="Street" className="border border-gray-300 px-3 py-2 rounded-lg" />
-                                                            <input value={editedAddress.city || ""} onChange={(e) => setEditedAddress({ ...editedAddress, city: e.target.value })} placeholder="City" className="border border-gray-300 px-3 py-2 rounded-lg" />
-                                                            <input value={editedAddress.state || ""} onChange={(e) => setEditedAddress({ ...editedAddress, state: e.target.value })} placeholder="State" className="border border-gray-300 px-3 py-2 rounded-lg" />
-                                                            <input value={editedAddress.zipCode || ""} onChange={(e) => setEditedAddress({ ...editedAddress, zipCode: e.target.value })} placeholder="Zip Code" className="border border-gray-300 px-3 py-2 rounded-lg" />
+                                                            <input value={editedAddress.fullName || ""} onChange={(e) => setEditedAddress({ ...editedAddress, fullName: e.target.value })} placeholder="Full Name" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.mobile || ""} onChange={(e) => setEditedAddress({ ...editedAddress, mobile: e.target.value })} placeholder="Mobile" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.address || ""} onChange={(e) => setEditedAddress({ ...editedAddress, address: e.target.value })} placeholder="Address" className="border border-gray-300 px-3 py-2 rounded-lg md:col-span-2 focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.street || ""} onChange={(e) => setEditedAddress({ ...editedAddress, street: e.target.value })} placeholder="Street" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.city || ""} onChange={(e) => setEditedAddress({ ...editedAddress, city: e.target.value })} placeholder="City" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.state || ""} onChange={(e) => setEditedAddress({ ...editedAddress, state: e.target.value })} placeholder="State" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
+                                                            <input value={editedAddress.zipCode || ""} onChange={(e) => setEditedAddress({ ...editedAddress, zipCode: e.target.value })} placeholder="Zip Code" className="border border-gray-300 px-3 py-2 rounded-lg focus:ring-2 focus:ring-primary-blue/20 outline-none" />
                                                             <div className="flex gap-3 mt-2 md:col-span-2">
-                                                                <button type="button" onClick={() => handleSaveEditedAddress(addr.id)} className="bg-green-600 text-white px-4 py-2 rounded-lg text-sm">Save</button>
-                                                                <button type="button" onClick={() => setEditingAddressId(null)} className="bg-gray-200 px-4 py-2 rounded-lg text-sm">Cancel</button>
+                                                                <button type="button" onClick={() => handleSaveEditedAddress(addr.id)} className="bg-green-600 text-white px-5 py-2 rounded-lg text-sm font-semibold hover:bg-green-700 transition">Save</button>
+                                                                <button type="button" onClick={() => setEditingAddressId(null)} className="bg-gray-200 text-gray-700 px-5 py-2 rounded-lg text-sm font-semibold hover:bg-gray-300 transition">Cancel</button>
                                                             </div>
                                                         </div>
                                                     </div>
                                                 ) : (
                                                     /* ADDRESS CARD */
-                                                    <label className="flex items-start gap-4 p-5 cursor-pointer">
+                                                    <label className="flex items-start gap-3 sm:gap-4 p-4 sm:p-5 cursor-pointer group">
                                                         <input
                                                             type="radio"
-                                                            name="selectedAddress"
-                                                            checked={selectedShippingId === addr.id}
-                                                            onChange={() => setSelectedShippingId(addr.id)}
-                                                            className="mt-1 w-4 h-4 text-primary-blue border-gray-300 focus:ring-primary-blue"
+                                                            name={isBillingType ? "billingAddress" : "shippingAddress"}
+                                                            checked={isSelected}
+                                                            onChange={() => {
+                                                                if (isBillingType) setSelectedBillingId(addr.id);
+                                                                else setSelectedShippingId(addr.id);
+                                                            }}
+                                                            className={`mt-1 w-4 h-4 shrink-0 border-gray-300 transition-all cursor-pointer ${isBillingType ? 'text-primary-red focus:ring-primary-red group-hover:ring-2 ring-primary-red/20' : 'text-primary-blue focus:ring-primary-blue group-hover:ring-2 ring-primary-blue/20'}`}
                                                         />
-                                                        <div className="flex-grow">
-                                                            <div className="flex items-center gap-2 mb-1.5">
-                                                                <span className="font-bold text-white p-1.5 px-2 bg-primary-blue rounded-lg text-xs">
-                                                                    {addr.shipping.type || "Shipping"}
-                                                                </span>
-                                                                <p className="font-bold text-gray-800 text-base">{addr.shipping.fullName}</p>
-                                                                {selectedShippingId === addr.id && <FaCheckCircle className="text-primary-blue text-sm" />}
+                                                        <div className="flex-1 min-w-0 flex flex-col sm:flex-row sm:items-start sm:justify-between gap-3">
+                                                            <div className="flex-grow min-w-0">
+                                                                <div className="flex items-center gap-2 mb-2 flex-wrap">
+                                                                    <span className={`font-bold text-white p-1.5 px-2 rounded-lg text-xs ${isBillingType ? 'bg-primary-red' : 'bg-primary-blue'}`}>
+                                                                        {addr.shipping.type || "Address"}
+                                                                    </span>
+                                                                    <p className="font-bold text-gray-800 text-base truncate">{addr.shipping.fullName}</p>
+                                                                </div>
+                                                                <p className="text-gray-600 text-sm break-words">{addr.shipping.address}, {addr.shipping.street}</p>
+                                                                <p className="text-gray-600 text-sm break-words">{addr.shipping.city}, {addr.shipping.state} - <span className="font-semibold">{addr.shipping.zipCode}</span></p>
+                                                                <p className="text-gray-600 text-sm mt-1.5 font-medium break-words">Mobile: <span className="text-gray-800">{addr.shipping.mobile}</span></p>
                                                             </div>
-                                                            <p className="text-gray-600 text-sm">{addr.shipping.address}, {addr.shipping.street}</p>
-                                                            <p className="text-gray-600 text-sm">{addr.shipping.city}, {addr.shipping.state} - <span className="font-semibold">{addr.shipping.zipCode}</span></p>
-                                                            <p className="text-gray-600 text-sm mt-1.5 font-medium">Mobile: <span className="text-gray-800">{addr.shipping.mobile}</span></p>
-                                                        </div>
-                                                        <div className="flex gap-2 shrink-0">
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); handleEditClick(addr.id, addr); }}
-                                                                className="bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-200 transition"
-                                                            >
-                                                                Edit
-                                                            </button>
-                                                            <button
-                                                                type="button"
-                                                                onClick={(e) => { e.preventDefault(); handleDeleteAddress(addr.id); }}
-                                                                className="bg-red-100 text-red-600 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-200 transition"
-                                                            >
-                                                                Delete
-                                                            </button>
+                                                            <div className="flex gap-2 shrink-0 mt-2 sm:mt-0">
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); handleEditClick(addr.id, addr); }}
+                                                                    className="bg-yellow-100 text-yellow-700 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-yellow-200 transition"
+                                                                >
+                                                                    Edit
+                                                                </button>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={(e) => { e.preventDefault(); handleDeleteAddress(addr.id); }}
+                                                                    className="bg-red-100 text-red-600 text-xs font-semibold px-3 py-1.5 rounded-lg hover:bg-red-200 transition"
+                                                                >
+                                                                    Delete
+                                                                </button>
+                                                            </div>
                                                         </div>
                                                     </label>
                                                 )}
                                             </div>
-                                        ))}
+                                        )})}
                                     </div>
-
-
-
-                                    {/* BILLING SAME CHECKBOX */}
-                                    {/* <div className="flex items-center gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100 mt-4">
-                                        <input
-                                            type="checkbox"
-                                            id="sameAsShipping"
-                                            checked={billingSameAsShipping}
-                                            onChange={(e) => {
-                                                setBillingSameAsShipping(e.target.checked);
-                                                if (e.target.checked) {
-                                                    setSelectedBillingId(selectedShippingId);
-                                                } else {
-                                                    setSelectedBillingId(null);
-                                                }
-                                            }}
-                                            className="w-5 h-5 text-primary-blue rounded border-gray-300 focus:ring-primary-blue transition"
-                                        />
-                                        <label htmlFor="sameAsShipping" className="text-gray-700 font-medium cursor-pointer select-none">
-                                            Billing address is same as shipping
-                                        </label>
-                                    </div> */}
-
-                                    {/* BILLING SELECTION - only when unchecked */}
-                                    {!billingSameAsShipping && (
-                                        <div className="mt-6">
-                                            <h3 className="font-semibold text-gray-800 text-lg mb-4">Select Billing Address</h3>
-                                            <div className="grid grid-cols-1 gap-4">
-                                                {addresses.map(addr => (
-                                                    <label
-                                                        key={addr.id}
-                                                        className={`flex items-start gap-4 p-5 rounded-2xl border cursor-pointer transition-all ${selectedBillingId === addr.id ? 'border-primary-red bg-red-50/40 ring-1 ring-primary-red shadow-sm' : 'border-gray-200 bg-white hover:border-gray-300'}`}
-                                                    >
-                                                        <input
-                                                            type="radio"
-                                                            name="billingAddress"
-                                                            checked={selectedBillingId === addr.id}
-                                                            onChange={() => setSelectedBillingId(addr.id)}
-                                                            className="mt-1 w-4 h-4 text-primary-red border-gray-300 focus:ring-primary-red"
-                                                        />
-                                                        <div className="flex-grow">
-                                                            <div className="flex items-center gap-2 mb-1.5">
-                                                                <span className="font-bold text-white p-1.5 px-2 bg-red-500 rounded-lg text-xs">Billing</span>
-                                                                <p className="font-bold text-gray-800 text-base">{addr.shipping.fullName}</p>
-                                                                {selectedBillingId === addr.id && <FaCheckCircle className="text-primary-red text-sm" />}
-                                                            </div>
-                                                            <p className="text-gray-600 text-sm">{addr.shipping.address}, {addr.shipping.street}</p>
-                                                            <p className="text-gray-600 text-sm">{addr.shipping.city}, {addr.shipping.state} - <span className="font-semibold">{addr.shipping.zipCode}</span></p>
-                                                        </div>
-                                                    </label>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    )}
 
                                     <button onClick={() => setIsAddingAddress(true)} className="mt-2 text-primary-blue font-semibold text-sm flex items-center gap-1.5 hover:underline">
                                         <FaPlus className="text-xs" /> Add another address
@@ -314,12 +267,19 @@ function Address() {
                                     {/* CONTINUE BUTTON */}
                                     <div className="pt-6 border-t border-gray-200 mt-6 flex justify-end">
                                         <button
-                                            disabled={!selectedShippingId || !selectedBillingId}
+                                            disabled={!selectedShippingId}
                                             onClick={() => {
+                                                const finalBillingId = selectedBillingId || selectedShippingId;
+                                                setSelectedBillingId(finalBillingId);
                                                 setStep(2);
                                                 window.scrollTo({ top: 0, behavior: "smooth" });
+                                                if (onContinueToPayment) {
+                                                    const s = addresses.find(a => a.id === selectedShippingId);
+                                                    const b = addresses.find(a => a.id === finalBillingId);
+                                                    onContinueToPayment(s, b);
+                                                }
                                             }}
-                                            className="px-8 py-3.5 bg-gradient-blue-red text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
+                                            className="w-full md:w-auto px-8 py-3.5 bg-gradient-blue-red text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-50 disabled:cursor-not-allowed disabled:transform-none"
                                         >
                                             Continue to Payment
                                         </button>

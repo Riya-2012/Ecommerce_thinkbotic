@@ -259,8 +259,8 @@ export default function Page() {
 
       ) : (
 
-        <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden">
-
+        <div className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden overflow-x-auto">
+          <div className="min-w-[800px]">
           {/* TABLE HEADER */}
 
           <div className="grid grid-cols-6 gap-4 px-6 py-4 bg-gray-100 border-b border-gray-100 text-sm font-semibold text-gray-600">
@@ -420,7 +420,7 @@ export default function Page() {
 
             )
           )}
-
+          </div>
         </div>
 
       )}

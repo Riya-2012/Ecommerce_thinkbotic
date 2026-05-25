@@ -471,9 +471,9 @@ console.log("low stock",lowStockProduct)
 
           </div>
 
-          <div className="p-6">
+          <div className="p-6 overflow-x-auto">
 
-            <div className="space-y-4 w-full">
+            <div className="space-y-4 min-w-[300px]">
 
               {recentOrder.length === 0 ? (
 
@@ -573,9 +573,9 @@ console.log("low stock",lowStockProduct)
             </div>
 
           </div>
-<div className="p-6">
+<div className="p-6 overflow-x-auto">
 
-  <div className="space-y-4">
+  <div className="space-y-4 min-w-[300px]">
 
     {lowStockProduct.length === 0 ? (
 
@@ -687,9 +687,9 @@ console.log("low stock",lowStockProduct)
 
           </div>
 
-          <div className="p-0">
+          <div className="p-0 overflow-x-auto">
 
-         <div className="divide-y divide-gray-100">
+         <div className="divide-y divide-gray-100 min-w-[300px]">
 
   {users.length === 0 ? (
 

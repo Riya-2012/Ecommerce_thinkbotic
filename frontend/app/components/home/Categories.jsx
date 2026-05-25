@@ -105,33 +105,23 @@ useState("");
   }}
 >
   {allProducts.map((item, i) => (
-    <SwiperSlide key={i} className="mb-4">
-
-      <Link
-  href={`/products?category=${item.category}`}
->
-
-  <div className="bg-[#f8fafc] shadow-sm rounded-2xl p-4 hover:shadow-md transition group cursor-pointer">
-      
-
-        <div className="relative w-full h-[120px] mb-4">
-          <Image
-          unoptimized
-            src={`${BASE_URL}/${item.img}`}
-            alt={item.title}
-            fill
-            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-            className="object-contain group-hover:scale-110 transition"
-          />
+    <SwiperSlide key={i} className="mb-4 h-auto">
+      <Link href={`/products?category=${item.category}`} className="block h-full">
+        <div className="bg-[#f8fafc] shadow-sm rounded-2xl p-3 sm:p-4 hover:shadow-md transition group cursor-pointer h-full flex flex-col justify-between text-center items-center">
+          <div className="relative w-full h-[80px] sm:h-[100px] md:h-[120px] mb-3 shrink-0">
+            <Image
+              unoptimized
+              src={`${BASE_URL}/${item.img}`}
+              alt={item.title}
+              fill
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              className="object-contain group-hover:scale-110 transition"
+            />
+          </div>
+          <h3 className="font-semibold text-xs sm:text-sm text-[#0f172a] line-clamp-2 w-full">
+            {item.category}
+          </h3>
         </div>
-
-        {/* <p className="text-xs text-gray-500">{item.brand}</p> */}
-
-        <h3 className="font-semibold text-sm text-[#0f172a] mt-1">
-          {item.category}
-        </h3>
-
-      </div>
       </Link>
     </SwiperSlide>
   ))}

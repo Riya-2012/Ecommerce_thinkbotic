@@ -127,7 +127,7 @@ const getCart = async (req, res) => {
 
     if (!cart || cart.items.length === 0) {
       return res.status(200).json({
-        items: cart.items || [],
+        items: cart?.items || [],
         cartDiscount: 0,
         deliveryFee: 0,
         gatewayCharges: 0,
@@ -372,7 +372,7 @@ const response = await Cashfree.PGCreateOrder("2023-08-01", {
         customer_phone: String(customerPhone),
       },
       order_meta: {
-        return_url: `http://localhost:5173/cart/payment-success?order_id={order_id}`,
+        return_url: `http://localhost:3000/cart/payment-success?order_id={order_id}`,
       },
     });
 

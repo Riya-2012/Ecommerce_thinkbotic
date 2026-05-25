@@ -137,7 +137,7 @@ const featuredProduct =
           key={banner._id}
         >
 
-          <div className="relative min-h-[350px] rounded-3xl overflow-hidden p-6 sm:p-8 flex flex-col justify-between bg-gradient-blue text-white shadow-lg">
+          <div className="relative min-h-[380px] sm:min-h-[350px] rounded-3xl overflow-hidden p-6 pb-[180px] sm:pb-8 sm:p-8 flex flex-col justify-between bg-gradient-blue text-white shadow-lg">
 
             {/* GLOW */}
 
@@ -147,7 +147,7 @@ const featuredProduct =
 
             {/* DISCOUNT */}
 
-            <div className="absolute top-5 right-5 bg-primary-red text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
+            <div className="absolute top-5 right-5 z-20 bg-primary-red text-white text-xs px-3 py-1 rounded-full font-semibold shadow">
 
               {product.discount}% OFF
 
@@ -155,49 +155,48 @@ const featuredProduct =
 
             {/* TEXT */}
 
-            <div className="z-10 max-w-[300px]">
+            <div className="z-10 relative w-full sm:max-w-[50%]">
 
-              <p className="text-lg uppercase text-primary-red font-bold">
+              <p className="text-sm sm:text-lg uppercase text-primary-red font-bold">
 
                 {banner.subtitle}
 
               </p>
 
-              <h2 className="text-3xl sm:text-4xl font-extrabold leading-tight mt-2">
+              <h2 className="text-2xl sm:text-4xl font-extrabold leading-tight mt-2">
 
                 {banner.title}
 
               </h2>
 
-              <p className="text-sm mt-3 opacity-90">
+              <p className="text-xs sm:text-sm mt-2 sm:mt-3 opacity-90 line-clamp-2 sm:line-clamp-none">
 
                 {banner.description}
 
               </p>
 
+              {/* BUTTON */}
+
+              <Link
+                href={
+                  `/products/${product.id}`
+                }
+              >
+
+                <button className="mt-4 sm:mt-6 bg-white text-primary-red px-4 sm:px-6 py-2 sm:py-3 rounded-full font-semibold text-sm sm:text-base w-fit hover:scale-105 transition relative z-20">
+
+                  {banner.buttonText ||
+                    "Shop Now"} →
+
+                </button>
+
+              </Link>
+
             </div>
-
-            {/* BUTTON */}
-
-            <Link
-              href={
-              
-                `/products/${product.id}`
-              }
-            >
-
-              <button className="z-10 mt-6 bg-white text-primary-red px-6 py-3 rounded-full font-semibold w-fit hover:scale-105 transition">
-
-                {banner.buttonText ||
-                  "Shop Now"} →
-
-              </button>
-
-            </Link>
 
             {/* IMAGE */}
 
-            <div className="absolute right-[-10px] bottom-[-10px] w-[150px] sm:w-[260px] h-[150px] sm:h-[260px] rotate-[-10deg]">
+            <div className="absolute right-0 sm:right-[-10px] bottom-[-10px] w-[180px] sm:w-[260px] h-[180px] sm:h-[260px] rotate-[-10deg] z-0">
 
               <img
                 src={product.image}
@@ -217,7 +216,7 @@ const featuredProduct =
 </Swiper>
 
         {/* RIGHT PRODUCTS */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 gap-4 mt-6 lg:mt-0">
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mt-6 lg:mt-0">
 
           {products.map((item, index) => (
             <ProductCard

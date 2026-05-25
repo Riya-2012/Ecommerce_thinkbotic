@@ -111,32 +111,23 @@ export default function CategoryProducts() {
 
               <SwiperSlide
                 key={i}
-                className="mb-4"
+                className="mb-4 h-auto"
               >
-
                 <div
                   className="
                     bg-[#f8fafc]
-
                     border border-gray-100
-
-                    rounded-3xl
-
+                    rounded-2xl sm:rounded-3xl
                     p-3
-
                     text-center
-
                     hover:shadow-md
-
                     transition-all duration-300
-
                     group
+                    h-full flex flex-col justify-between items-center
                   "
                 >
-
                   {/* IMAGE */}
-                  <div className="relative w-full h-[60px] mb-4">
-
+                  <div className="relative w-full h-[60px] sm:h-[80px] md:h-[100px] mb-3 shrink-0">
                     <Image
                       src={`${apiUrl}/${item.img}`}
                       alt={item.category}
@@ -144,24 +135,17 @@ export default function CategoryProducts() {
                       unoptimized
                       className="
                         object-contain
-
                         group-hover:scale-110
-
                         transition duration-300
                       "
-
                     />
                   </div>
 
                   {/* CATEGORY */}
-                  <h3 className="font-semibold text-sm text-[#0f172a]">
-
+                  <h3 className="font-semibold text-xs sm:text-sm text-[#0f172a] line-clamp-2 w-full">
                     {item.category}
-
                   </h3>
-
                 </div>
-
               </SwiperSlide>
 
             ))}

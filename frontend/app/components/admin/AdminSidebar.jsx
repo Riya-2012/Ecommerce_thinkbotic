@@ -84,18 +84,18 @@ const links = [
   },
 ];
 
-export default function AdminSidebar() {
+export default function AdminSidebar({ closeSidebar }) {
   const pathname = usePathname();
   const {user, logout}=useAuth();
 
   return (
-    <div className="w-full lg:w-[300px]">
+    <div className="w-full h-full min-h-screen bg-white lg:bg-transparent border-r border-gray-100 lg:border-none">
 
       {/* SIDEBAR */}
-      <div className="  sticky top-0">
+      <div className="sticky top-0">
 
         {/* USER CARD */}
-  <Link href="/user/setting">
+  <Link href="/user/setting" onClick={() => { if(closeSidebar) closeSidebar(); }}>
        <div className="bg-white  shadow-sm border border-gray-100 p-5">
 
   <div className="flex items-center gap-4">
@@ -142,6 +142,7 @@ export default function AdminSidebar() {
               <Link
                 key={index}
                 href={link.href}
+                onClick={() => { if(closeSidebar) closeSidebar(); }}
                 className={`flex items-center gap-3 px-4 py-2 rounded-xl font-medium transition-all duration-300 group
                   
                   ${
@@ -174,8 +175,10 @@ export default function AdminSidebar() {
   
 
     <button 
-      onClick={logout }
-    
+      onClick={() => { 
+        logout(); 
+        if(closeSidebar) closeSidebar(); 
+      }}
       className="   mt-6 flex items-center justify-center gap-3 px-4 py-3 rounded-2xl bg-gradient-blue-red text-white font-semibold hover:bg-red-50 transition">
 
           <FaSignOutAlt />
