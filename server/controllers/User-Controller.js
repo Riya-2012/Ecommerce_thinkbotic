@@ -127,7 +127,7 @@ const getCart = async (req, res) => {
 
     if (!cart || cart.items.length === 0) {
       return res.status(200).json({
-        items: cart?.items || [],
+        items: cart.items || [],
         cartDiscount: 0,
         deliveryFee: 0,
         gatewayCharges: 0,

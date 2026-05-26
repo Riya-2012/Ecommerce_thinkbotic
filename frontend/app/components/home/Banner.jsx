@@ -14,7 +14,7 @@ import {
   Swiper,
   SwiperSlide,
 } from "swiper/react";
-
+import "swiper/css/autoplay";
 import {
   Autoplay,
   Pagination,
@@ -70,22 +70,38 @@ export default function Banner() {
 
         <div className="lg:col-span-2">
 
-          <Swiper
-            modules={[
-              Autoplay,
-              Pagination,
-            ]}
-            autoplay={{
-              delay: 4000,
-              // disableOnInteraction: false,
-            }}
-            pagination={{
-              clickable: true,
-            }}
-            loop={true}
-            className="rounded-3xl overflow-hidden"
-          >
+<Swiper
+key={mainBanner.length}
+  modules={[
+    Autoplay,
+    Pagination,
+  ]}
 
+  autoplay={{
+
+    delay: 4000,
+
+    disableOnInteraction: false,
+
+    pauseOnMouseEnter: false,
+  }}
+
+  observer={true}
+
+  observeParents={true}
+
+  watchSlidesProgress={true}
+
+  pagination={{
+    clickable: true,
+  }}
+
+  speed={1200}
+
+  loop={true}
+
+  className="rounded-3xl overflow-hidden"
+>
             {mainBanner.map(
               (mainBanner) => (
 
@@ -194,6 +210,7 @@ export default function Banner() {
         {/* RIGHT SIDE */}
         <div className="min-h-[420px] md:min-h-[300px] flex flex-col md:flex-row lg:flex-col gap-6 overflow-hidden ">
           <Swiper
+          key={`side2-${sideBanner2.length}`}
             modules={[
               Autoplay,
               Pagination,
@@ -294,6 +311,7 @@ export default function Banner() {
           </Swiper>
 
           <Swiper
+       key={`side1-${sideBanner1.length}`}
             modules={[
               Autoplay,
               Pagination,

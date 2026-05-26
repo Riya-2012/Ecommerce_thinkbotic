@@ -76,6 +76,12 @@ function AddCart({
             selectedColor || "",
         });
 
+
+        router.push(
+        "/cart"
+      );
+
+
       } catch (error) {
 
         console.log(error);

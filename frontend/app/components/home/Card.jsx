@@ -4,6 +4,7 @@ import { FaHeart, FaShareAlt, FaStar } from "react-icons/fa";
 import WishlistIcon from "../products/WhishlistIcon";
 import AddCart from "../products/AddCart";
 import ShareButton from "../products/ShareButton";
+import BuyNow from "../products/BuyButton";
 
 export default function ProductCard({
   id,
@@ -130,7 +131,7 @@ export default function ProductCard({
     discount,
   }}
 />
-
+{/* 
           <button className="bg-gradient-blue-red text-white px-6 py-2 rounded-full text-xs font-medium shadow hover:opacity-90 transition"
             onClick={(e) => {
               e.preventDefault();
@@ -139,8 +140,26 @@ export default function ProductCard({
             }}
           >
             Buy
-          </button>
+          </button> */}
   
+  <BuyNow   product={{
+
+    _id: id,
+
+    image,
+
+    title,
+
+    category,
+
+    price,
+
+    oldPrice,
+
+    discount,
+  }}
+  
+  />
         </div>
 
       </div>

@@ -15,8 +15,8 @@ const {user}= useAuth();
     const fetchOrders = async () => {
       try {
         const res = await api.get(`api/user/orders`);
-        const data = await res.json();
-        console.log("recentOrders",data)
+      const data=res.data;
+        console.log("recentOrders",res.data)
         if (Array.isArray(data)) {
           setOrders(data);
 
@@ -30,9 +30,9 @@ const {user}= useAuth();
     fetchOrders();
   }, [user]);
 
-  // const handleRowClick = (orderId, productId) => {
-  //   router.push(`/admin/orderdetails/${orderId}/${productId}`);
-  // };
+  const handleRowClick = (orderId, productId) => {
+    router.push(`/admin/setting/recentOrders/${orderId}`);
+  };
 
  return (
 
@@ -132,20 +132,17 @@ const {user}= useAuth();
             <div
               className={`px-4 py-2 rounded-full text-xs font-semibold ${
                 order.payment?.status ===
-                "success"
+                "pending"
 
-                  ? "bg-green-100 text-green-600"
+                  
 
-                  : "bg-red-100 text-red-600"
+                ? "bg-red-100 text-red-600"
+
+                 : "bg-green-100 text-green-600"
               }`}
             >
 
-              {order.payment?.status ===
-              "success"
-
-                ? "Paid"
-
-                : "Payment Failed"}
+              {order.payment?.status }
 
             </div>
 
@@ -184,13 +181,24 @@ const {user}= useAuth();
 
                     <img
                       src={
-                        item.img
-
-                          ? `${apiUrl}/${item.img}`
-
-                          : "/no-image.png"
+                         item.img
+                       
+                                                     ? `${BASE_URL}/${item.img}`
+                       
+                                                     : item.productId?.img
+                       
+                                                       ? `${BASE_URL}/${item.productId.img}`
+                       
+                                                       : "/no-image.png"
                       }
-                      alt={item.name}
+                     alt={
+
+                            item.title ||
+
+                            item.productId?.name ||
+
+                            "Product"
+                          }
                       className="w-full h-full object-cover"
                     />
 
@@ -202,7 +210,7 @@ const {user}= useAuth();
 
                     <h3 className="text-lg font-bold text-[#0f172a]">
 
-                      {item.name || "N/A"}
+                 {   item.productId?.name }
 
                     </h3>
 

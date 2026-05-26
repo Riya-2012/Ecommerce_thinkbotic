@@ -18,9 +18,10 @@ export default function ProductsPage() {
 const searchParams=useSearchParams();
 const router=useRouter();
 const category= searchParams.get('category');
-const brand=searchParams.get('brands');
-
+const brand=searchParams.get('brand');
+const search = searchParams.get("search");
 const rating = searchParams.get('rating');
+const subcategory= searchParams.get('subcategory')
   const [allProducts, setAllProducts] = useState([]);
   const [sort, setSort] = useState("default");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -33,7 +34,7 @@ const [selectedSubCategory, setSelectedSubCategory] = useState("");
 const [openCategory, setOpenCategory] = useState("");
 const [selectedBrands,
 setSelectedBrands] =
-useState(brand || "");
+useState(brand? brand.split(","): []);
 
 const [selectedRating,
 setSelectedRating] =
@@ -44,26 +45,67 @@ const [brands, setBrands] = useState([]);
 
 useEffect(() => {
 
+  if (category) {
+
+    setSelectedCategory(
+      decodeURIComponent(category)
+    );
+
+  } else {
+
+    setSelectedCategory("All");
+  }
+
+}, [category]);
+
+useEffect(() => {
+
+  if (subcategory) {
+
+    setSelectedSubCategory(
+      decodeURIComponent(
+        subcategory
+      )
+    );
+
+  }
+
+}, [subcategory]);
+
+useEffect(() => {
+
   const params =
     new URLSearchParams();
+
+  if (search) {
+
+    params.set(
+      "search",
+      search
+    );
+  }
 
   if (
     selectedCategory &&
     selectedCategory !== "All"
   ) {
 
-    params.set(
-      "category",
-      selectedCategory
-    );
+  params.set(
+"category",
+encodeURIComponent(
+selectedCategory
+)
+);
   }
 
-  if (selectedBrands) {
+if (
+selectedBrands.length > 0
+) {
 
     params.set(
-      "brand",
-      selectedBrands
-    );
+"brand",
+selectedBrands.join(",")
+);
   }
 
   if (selectedRating) {
@@ -74,14 +116,32 @@ useEffect(() => {
     );
   }
   
+
+  
   router.push(
     `/products?${params.toString()}`
   );
+
+if (
+selectedSubCategory
+) {
+
+  params.set(
+
+    "subcategory",
+
+encodeURIComponent(
+selectedSubCategory
+    )
+  );
+}
 
 }, [
   selectedCategory,
   selectedBrands,
   selectedRating,
+  search,
+  selectedSubCategory
 
 ]);
 
@@ -202,7 +262,15 @@ console.log("all products",allProducts);
     /* CATEGORY */
     if (
       selectedCategory !== "All" &&
-      product.category !== selectedCategory
+     product.category
+.toLowerCase()
+.trim()
+
+!==
+
+selectedCategory
+?.toLowerCase()
+.trim()
     ) {
       return false;
     }
@@ -210,7 +278,15 @@ console.log("all products",allProducts);
     /* SUBCATEGORY */
     if (
       selectedSubCategory &&
-      product.subcategory !== selectedSubCategory
+    product.subcategory
+?.toLowerCase()
+.trim()
+
+!==
+
+selectedSubCategory
+?.toLowerCase()
+.trim()
     ) {
       return false;
     }
@@ -249,6 +325,48 @@ console.log("all products",allProducts);
       return false;
     }
 
+// search
+/* SEARCH */
+
+if (
+
+search &&
+
+!product.title
+.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+&&
+
+!product.category
+.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+&&
+
+!product.subcategory
+?.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+&&
+
+!product.brand
+?.toLowerCase()
+.includes(
+search.toLowerCase()
+)
+
+) {
+
+  return false;
+}
+
     return true;
   });
   
@@ -268,6 +386,51 @@ const toggleBrand = (brand) => {
 const handleRating = (rate) => {
   setSelectedRating((prev) => (prev === rate ? 0 : rate));
 };
+
+useEffect(() => {
+
+  if (!search) return;
+
+  const searchLower =
+    search.toLowerCase();
+
+  // FIND MATCHING CATEGORY
+
+  const matchedCategory =
+    allProducts.find(
+
+      (product) =>
+
+product.category
+?.toLowerCase()
+.includes(
+searchLower
+)
+    );
+
+  // SET CATEGORY ACTIVE
+
+  if (matchedCategory) {
+
+    setSelectedCategory(
+
+matchedCategory.category
+    );
+
+  } else {
+
+    setSelectedCategory(
+      "All"
+    );
+  }
+
+}, [
+
+  search,
+
+  allProducts,
+]);
+
 const visibleBrands = showBrands ? brands : brands.slice(0, 2);
 const visibleRatings = showRatings ? Ratings : Ratings.slice(0, 2);
   return (
@@ -363,7 +526,12 @@ const visibleRatings = showRatings ? Ratings : Ratings.slice(0, 2);
           onClick={() => {
             setSelectedCategory(cat);
             setOpenCategory(openCategory === cat ? "" : cat);
-            setSelectedSubCategory("");
+          if (
+openCategory !== cat
+) {
+
+setSelectedSubCategory("");
+}
           }}
           className={`w-full text-left text-[15px] flex items-center justify-between transition group ${
             selectedCategory === cat

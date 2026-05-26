@@ -1,189 +1,311 @@
 "use client";
 
-import api from "@/app/lib/axios";
-import Image from "next/image";
-import Link from "next/link";
-import { useEffect, useState } from "react";
+import React,
+{
+  useEffect,
+  useState,
+} from "react";
 
 import {
-  FaBoxOpen,
-  FaTruck,
-  FaCheckCircle,
-  FaClock,
-  FaSearch,
-} from "react-icons/fa";
+  useAuth
+} from "@/app/context/AuthContext";
 
-// const orders = [
-//   {
-//     id: "#ORD10245",
-//     image: "/product-1.jpg",
-//     title: "Smart Watch Elite",
-//     category: "Electronics",
-//     price: 2999,
-//     qty: 1,
-//     status: "Delivered",
-//     payment: "Paid",
-//     date: "12 May 2026",
-//   },
-//   {
-//     id: "#ORD10246",
-//     image: "/product-2.jpg",
-//     title: "Wireless Headphones",
-//     category: "Audio",
-//     price: 1999,
-//     qty: 2,
-//     status: "Shipped",
-//     payment: "Paid",
-//     date: "15 May 2026",
-//   },
-//   {
-//     id: "#ORD10247",
-//     image: "/product-3.jpg",
-//     title: "Running Shoes",
-//     category: "Fashion",
-//     price: 2499,
-//     qty: 1,
-//     status: "Processing",
-//     payment: "COD",
-//     date: "18 May 2026",
-//   },
-// ];
+import api ,{BASE_URL} from "@/app/lib/axios";
 
+import Image from "next/image";
 
-
+import Link from "next/link";
 
 export default function Page() {
-  const [orders, setOrders] = useState([]);
-    useEffect(() => {
-    const fetchOrders = async () => {
-      try {
-        const res = await api.get(`api/user/orders`);
-        const data = await res.json();
-        if (Array.isArray(data)) {
-          setOrders(data);
-        } else {
-          setOrders([]); 
-        }
-      } catch (err) {
-        setOrders([]); 
-        console.error("Failed to fetch orders", err);
-      }
-    };
-    fetchOrders();
-  }, [token]);
 
+  const { user } =
+    useAuth();
+
+  const [orders,
+    setOrders] =
+    useState([]);
+
+
+
+  useEffect(() => {
+
+    const fetchOrders =
+      async () => {
+
+        try {
+
+          const res =
+            await api.get(
+              "/api/user/orders"
+            );
+
+          const data =
+            res.data;
+console.log("orders data",res.data);
+          if (
+            Array.isArray(data)
+          ) {
+
+            setOrders(data);
+
+          } else {
+
+            setOrders([]);
+          }
+
+        } catch (err) {
+
+          setOrders([]);
+
+          console.log(err);
+        }
+      };
+
+    if (user) {
+
+      fetchOrders();
+    }
+
+  }, [user]);
+  
 
   return (
+
     <div className="space-y-8">
 
       <div className="flex flex-col gap-6 mt-6">
 
-        {orders.map((order, index) => (
+        {orders.length > 0 ? (
 
-          <div
-            key={index}
-            className=" shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
-          >
-            <div className="p-2 flex flex-col xl:flex-row gap-6 xl:items-center xl:justify-between">
+          orders.map((order) =>
 
+            order.items.map(
+              (item, index) => (
 
-              <div className="flex flex-col sm:flex-row gap-5">
+                <div
 
-                <div className="w-full sm:w-[130px] h-[120px]  overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
+                  key={index}
 
-                  <Image
-                    src={order.image}
-                    width={100}
-                    height={100}
-                    alt={order.title}
-                    className="w-full h-full object-cover"
-                  />
+                  className="shadow-sm border border-gray-200 overflow-hidden hover:shadow-md transition"
+                >
 
-                </div>
+                  <div className="p-2 flex flex-col xl:flex-row gap-6 xl:items-center xl:justify-between">
 
-                <div>
+                    {/* LEFT */}
 
-                  <p className="text-sm text-primary-blue font-medium">
+                    <div className="flex flex-col sm:flex-row gap-5">
 
-              {order.category}
-                  </p>
+                      {/* IMAGE */}
 
-                  <h2 className="text-l font-semibold text-[#0f172a]">
-                    {order.title}
-                  </h2>
+                      <div className="w-full sm:w-[130px] h-[120px] overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
 
-                  <div className="flex flex-wrap gap-5 mt-2">
+                        <Image
+unoptimized
+                          src={
 
-                    <div>
-                      <p className="text-xs text-gray-500">
-                        Quantity 
-                      </p>
+                            item.img
 
-                      <h4 className="font-semibold mt-1 text-sm">
-                        {order.qty}
-                      </h4>
+                              ? `${BASE_URL}/${item.img}`
+
+                              : item.productId?.img
+
+                                ? `${BASE_URL}/${item.productId.img}`
+
+                                : "/no-image.png"
+                          }
+
+                          width={130}
+
+                          height={120}
+
+                          alt={
+
+                            item.title ||
+
+                            item.productId?.name ||
+
+                            "Product"
+                          }
+
+                          className="w-full h-auto object-cover"
+                        />
+
+                      </div>
+
+                      {/* DETAILS */}
+
+                      <div>
+
+                        <p className="text-sm text-primary-blue font-medium">
+
+                          {
+
+                            item.category ||
+
+                            item.productId?.category ||
+
+                            "N/A"
+                          }
+
+                        </p>
+
+                        <h2 className="text-lg font-semibold text-[#0f172a]">
+
+                          {
+
+                            item.title ||
+
+                            item.productId?.name ||
+
+                            "Product"
+                          }
+
+                        </h2>
+
+                        <div className="flex flex-wrap gap-5 mt-2">
+
+                          {/* QUANTITY */}
+
+                          <div>
+
+                            <p className="text-xs text-gray-500">
+
+                              Quantity
+
+                            </p>
+
+                            <h4 className="font-semibold mt-1 text-sm">
+
+                              {
+
+                                item.quantity || 1
+                              }
+
+                            </h4>
+
+                          </div>
+
+                          {/* PRICE */}
+
+                          <div>
+
+                            <p className="text-xs text-gray-500">
+
+                              Price
+
+                            </p>
+
+                            <h4 className="font-semibold text-sm mt-1 text-primary-red">
+
+                              ₹
+                              {
+
+                                item.price
+                              }
+
+                            </h4>
+
+                          </div>
+
+                          {/* DATE */}
+
+                          <div>
+
+                            <p className="text-xs text-gray-500">
+
+                              Ordered On
+
+                            </p>
+
+                            <h4 className="font-semibold mt-1 text-sm">
+
+                              {
+
+                                new Date(
+                                  order.createdAt
+                                ).toLocaleDateString()
+                              }
+
+                            </h4>
+
+                          </div>
+
+                        </div>
+
+                      </div>
+
                     </div>
 
-                    <div>
-                      <p className="text-xs text-gray-500">
-                        Price 
-                      </p>
+                    {/* RIGHT */}
 
-                      <h4 className="font-semibold text-sm mt-1 text-primary-red">
-                        ₹{order.price}
-                      </h4>
-                    </div>
+                    <div className="flex flex-col items-start sm:items-end justify-between gap-4 h-full">
 
-                    <div>
-                      <p className="text-xs text-gray-500">
-                        Delivered On
-                      </p>
+                      {/* STATUS */}
 
-                      <h4 className="font-semibold mt-1 text-sm">
-                        {order.date}
-                      </h4>
+                      <span
+
+                        className={`px-4 py-1.5 rounded-full text-xs font-bold
+
+${order.payment?.status ===
+                            "PAID"
+
+                            ? "bg-green-100 text-green-600"
+
+                            : "bg-orange-100 text-orange-500"
+                          }
+`}
+                      >
+
+                        {
+
+                          order.payment?.status ||
+
+                          "Processing"
+                        }
+
+                      </span>
+
+                      {/* BUTTON */}
+
+                      <Link
+
+                        href={`/user/orders/${order._id}`}
+                      >
+
+                        <button className="px-5 py-2.5 rounded-xl bg-gradient-blue-red text-white font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+
+                          View Details
+
+                        </button>
+
+                      </Link>
+
                     </div>
 
                   </div>
 
                 </div>
+              )
+            )
+          )
 
-              </div>
+        ) : (
 
-              <div className="flex flex-col items-start  sm:items-end justify-between gap-4 h-full">
+          <div className="flex flex-col items-center justify-center py-20">
 
-                {/* STATUS */}
-                <span
-                  className={`px-4 py-1.5 rounded-full text-xs font-bold
-    
-                    ${order.status === "Delivered"
-                      ? "bg-green-100 text-green-600"
-                      : order.status === "Shipped"
-                        ? "bg-primary-blue/10 text-primary-blue"
-                        : "bg-orange-100 text-orange-500"
-                    }
-    `}
-                >
-                  {order.status}
-                </span>
+            <h2 className="text-2xl font-bold text-gray-700">
 
-                {/* BUTTON */}
-                <Link href={`/user/orders/${order.id}`}>
+              No Orders Found
 
-                  <button className="px-5 py-2.5 rounded-xl bg-gradient-blue-red text-white font-semibold shadow-sm hover:shadow-md hover:scale-[1.02] transition-all duration-300">
+            </h2>
 
-                    View Details
+            <p className="text-gray-500 mt-2">
 
-                  </button>
-
-                </Link>
-
-              </div>
-            </div>
+              Your orders will appear here.
+            </p>
 
           </div>
-
-        ))}
+        )}
 
       </div>
 

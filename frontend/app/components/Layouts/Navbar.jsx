@@ -10,6 +10,7 @@ import { useAuth } from "@/app/context/AuthContext";
 import api, { BASE_URL } from "@/app/lib/axios";
 import { useWishlist } from "@/app/context/WhishlistContext";
 import { useCart } from "@/app/context/CartContext";
+import SearchBar from "./SearchBar";
 
 
 function Navbar() {
@@ -104,19 +105,7 @@ const logoItem =
 
   <div className="w-full md:max-w-[260px] lg:max-w-lg border border-primary-blue rounded-full overflow-hidden focus-within:ring-2 focus-within:ring-primary-blue transition bg-white">
 
-    <div className="flex items-center">
-
-      <input
-        type="text"
-        placeholder="Search products..."
-        className="flex-1 px-3 lg:px-4 py-2 text-sm outline-none"
-      />
-
-      <button className="flex items-center justify-center px-4 lg:px-6 py-2.5 border-l bg-gradient-blue text-white hover:opacity-90 transition">
-        <FaSearch />
-      </button>
-
-    </div>
+   <SearchBar />
 
   </div>
 
@@ -225,16 +214,7 @@ const logoItem =
           <div className="md:hidden mt-4 space-y-4 border-t pt-4">
 
             {/* SEARCH */}
-            <div className="flex border rounded-full overflow-hidden">
-              <input
-                type="text"
-                placeholder="Search..."
-                className="flex-1 px-3 py-2 outline-none"
-              />
-              <div className="px-4 flex items-center bg-primary-blue text-white">
-                <FaSearch />
-              </div>
-            </div>
+         <SearchBar />
 
             {/* LINKS */}
             <div className="flex flex-col gap-3 text-sm">

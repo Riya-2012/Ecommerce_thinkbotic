@@ -13,12 +13,18 @@ import {
 
 import api from "@/app/lib/axios";
 
+import {
+usePathname,
+useRouter
+} from "next/navigation";
+
+
 export default function StickyCategoryNav() {
 
   const [show,
   setShow] =
     useState(false);
-
+const router = useRouter();
   const [open,
   setOpen] =
     useState(false);
@@ -51,6 +57,59 @@ export default function StickyCategoryNav() {
       );
 
   }, []);
+
+const pathname =
+usePathname();
+
+const handleTodayDeals =
+() => {
+
+  // ALREADY ON HOME PAGE
+
+  if (pathname === "/") {
+
+    const section =
+
+document.getElementById(
+"today-deals"
+    );
+
+    if (section) {
+
+      section.scrollIntoView({
+
+        behavior: "smooth",
+      });
+    }
+  }
+
+  // OTHER PAGE
+
+  else {
+
+    router.push(
+      "/"
+    );
+
+    setTimeout(() => {
+
+      const section =
+
+document.getElementById(
+"today-deals"
+      );
+
+      if (section) {
+
+section.scrollIntoView({
+
+  behavior: "smooth",
+});
+      }
+
+    }, 500);
+  }
+};
 
   // FETCH PRODUCTS
 
@@ -230,7 +289,7 @@ export default function StickyCategoryNav() {
                         {/* CATEGORY */}
 
                         <Link
-                          href={`/products?category=${section.title}`}
+                        href={`/products?category=${encodeURIComponent(section.title)}`}
                         >
 
                           <h3 className="font-semibold text-primary-blue mb-3 hover:underline cursor-pointer">
@@ -305,8 +364,7 @@ export default function StickyCategoryNav() {
 
            <Link href="/user" >
             <p className="hover:text-primary-blue cursor-pointer text-primary-red font-semibold">
-
-Setting
+              Setting
             </p>
            </Link>
 
@@ -320,13 +378,18 @@ Setting
 
           {/* BUTTON */}
 
-          <div>
+          <div >
 
-            <button className="bg-gradient-blue-red text-white px-4 py-2 rounded-full text-sm">
+          <button
+onClick={
+handleTodayDeals
+} 
+className="bg-gradient-blue-red text-white px-4 py-2 rounded-full text-sm"
+>
 
-              Today’s Deal
+  Today Deals
 
-            </button>
+</button>
 
           </div>
 

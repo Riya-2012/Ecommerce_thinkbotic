@@ -27,7 +27,7 @@ function ProductCard({ item }) {
       <div className="relative w-full h-full rounded-3xl overflow-hidden group cursor-pointer">
         <Image src={`${BASE_URL}/${item.img}`} alt={item.name} fill unoptimized
           className="object-cover group-hover:scale-110 transition duration-500" />
-        <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition" />
+        <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition" />
         <CardContent item={item} textPosition="bottom-left" />
       </div>
     </Link>
@@ -107,7 +107,7 @@ function SplitOverlapCard({ card1, card2 }) {
         <div className="relative w-full h-full group">
           <Image src={`${BASE_URL}/${card2.img}`} alt={card2.name} fill unoptimized
             className="object-cover group-hover:scale-105 transition duration-500" />
-          <div className="absolute inset-0 bg-black/45 group-hover:bg-black/35 transition" />
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/35 transition" />
 
         
             <Link
@@ -136,7 +136,7 @@ function SplitOverlapCard({ card1, card2 }) {
         <div className="relative w-full h-full group">
           <Image src={`${BASE_URL}/${card1.img}`} alt={card1.name} fill unoptimized
             className="object-cover group-hover:scale-110 transition duration-500" />
-          <div className="absolute inset-0 bg-black/40 group-hover:bg-black/50 transition" />
+          <div className="absolute inset-0 bg-black/20 group-hover:bg-black/30 transition" />
 
         
             <Link
@@ -232,7 +232,22 @@ export default function RecentlyViewed() {
         </div>
 
         {/* 3 slots in a row — slot 1 & 2 large, slot 3 small */}
-        <div className="flex gap-6 h-[260px] ">
+      <div className="
+
+flex
+
+flex-col
+
+md:flex-row
+
+gap-4
+
+md:gap-6
+
+h-auto
+
+md:h-[260px]
+">
           <div className="relative flex-[2] min-w-0">{slot1()}</div>
           <div className="relative flex-[2] min-w-0">{slot2()}</div>
           <div className="relative flex-[1] min-w-0">{slot3()}</div>

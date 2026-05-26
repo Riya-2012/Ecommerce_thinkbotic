@@ -179,9 +179,9 @@ export const CartProvider =
           );
         }
 
-        toast.success(
-          "Added to cart"
-        );
+        // toast.success(
+        //   "Added to cart"
+        // );
 
       } catch (error) {
 

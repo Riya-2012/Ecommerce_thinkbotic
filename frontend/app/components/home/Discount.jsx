@@ -16,13 +16,15 @@ import {
 
 import "swiper/css";
 import "swiper/css/pagination";
-
+import "swiper/css/autoplay";
 export default function Discount() {
 const [products, setProducts] = useState([]);
 
   const [loading, setLoading] = useState(true);
 const [banners,setBanners]=useState([]);
-
+const [mounted,
+setMounted] =
+useState(false);
   useEffect(() => {
 
     const discountedProducts = async () => {
@@ -88,7 +90,14 @@ console.log(error);
 fetchBanner();
     discountedProducts();
   }, []);
+useEffect(() => {
 
+  setMounted(true);
+
+}, []);
+
+if (!mounted)
+return null;
 const trBanners =
   banners.filter(
     (item) =>
@@ -98,26 +107,39 @@ const trBanners =
 const featuredProduct =
   products[0];
   return (
-    <div className="px-4 sm:px-6 lg:px-10 py-14 bg-[#f8fafc]">
+    <div className="px-4 sm:px-6 lg:px-10 py-14 bg-[#f8fafc]"   id="today-deals">
       <div className="max-w-[1400px] mx-auto grid grid-cols-1 lg:grid-cols-2 gap-8">
 
         {/* LEFT BANNER */}
 <Swiper
+ key={trBanners.length}
   modules={[
     Autoplay,
     Pagination,
   ]}
 
   autoplay={{
+
     delay: 3000,
+
+    disableOnInteraction: false,
+
+    pauseOnMouseEnter: false,
   }}
+
+  observer={true}
+
+  observeParents={true}
+
+  watchSlidesProgress={true}
 
   pagination={{
     clickable: true,
   }}
 
-  loop={true}
+  speed={1200}
 
+  loop={true}
 
   className="rounded-3xl overflow-hidden w-full"
 >

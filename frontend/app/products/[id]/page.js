@@ -221,7 +221,7 @@ const imageUrl = selectedImage
                 src={imageUrl}
                 fill
                 priority
-                className="object-cover drop-shadow-xl"
+                className="object-contain drop-shadow-xl"
                 alt={product.name}
               // sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
               />

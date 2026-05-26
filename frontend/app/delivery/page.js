@@ -24,7 +24,7 @@ export default function CheckoutPage() {
     useEffect(() => {
         const fetchCart = async () => {
             try {
-                const res = await api.get('/api/user/cart');
+                const res = await api.get('api/user/cart');
                 setCart(res.data?.items || []);
             } catch (error) {
                 console.error("Failed to fetch cart", error);
@@ -36,13 +36,16 @@ export default function CheckoutPage() {
         fetchCart();
     }, []);
 
-    const handleContinueToPayment = (shippingAddr, billingAddr) => {
-        setSelectedShipping(shippingAddr);
-        setSelectedBilling(billingAddr);
-        setStep(2);
-    };
+   const handleContinueToPayment = (shippingAddr, billingAddr) => {
+    // Extract the nested shipping object
+    setSelectedShipping(shippingAddr?.shipping || shippingAddr);
+    setSelectedBilling(billingAddr?.billing || billingAddr);
+    setStep(2);
+};
 
     const handlePlaceOrder = async (total) => {
+        console.log("selectedShipping:", selectedShipping);
+console.log("phone being sent:", selectedShipping.mobile);
         if (!selectedShipping) {
             return toast.error("Please select a shipping address first");
         }
@@ -52,19 +55,19 @@ export default function CheckoutPage() {
 
         setIsProcessing(true);
         try {
+            console.log("Shipping address object:", selectedShipping);
             // 1. Create order on backend to get Cashfree session
-            const res = await api.post("/api/user/create-order", {
-                amount: total,
-                customerName: selectedShipping.shipping.fullName,
-                customerEmail: user?.email || "customer@example.com",
-                customerPhone: selectedShipping.shipping.mobile,
-            });
-
+          const res = await api.post("/api/user/create-order", {
+    amount: total,
+    customerName: selectedShipping?.shipping?.fullName || selectedShipping?.fullName,
+    customerEmail: user?.email || "customer@example.com",
+    customerPhone: selectedShipping?.shipping?.mobile || selectedShipping?.mobile,
+});
             if (res.data.success && res.data.paymentSessionId) {
                 // Save order details to localStorage so we can finalize it after payment success
                 localStorage.setItem("pendingOrderDetails", JSON.stringify({
-                    shippingAddress: selectedShipping.shipping,
-                    billingAddress: selectedBilling ? selectedBilling.shipping : selectedShipping.shipping,
+                    shippingAddress: selectedShipping,
+                    billingAddress: selectedBilling ? selectedBilling : selectedShipping,
                     items: cart,
                     orderSummary: { totalAmount: total },
                     payment: { method: "Cashfree", status: "Pending" }
@@ -80,10 +83,14 @@ export default function CheckoutPage() {
                 });
             } else {
                 toast.error("Failed to initialize payment session");
+                
                 setIsProcessing(false);
             }
         } catch (error) {
             console.error("Payment initiation error:", error);
+  const errData = error.response?.data;
+  console.log("ERR DATA RAW:", JSON.stringify(errData));
+  console.log("ERR MESSAGE:", errData?.message || errData?.error || errData?.msg);
             toast.error("An error occurred while starting payment");
             setIsProcessing(false);
         }
