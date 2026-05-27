@@ -271,16 +271,35 @@ const getTotalSale = async (req, res) => {
   }
 };
 
-const markOrderAsDelivered = async (req, res) => {
+
+const updateOrderStatus = async (req, res) => {
   try {
     const { orderId } = req.params;
+    const { status } = req.body;
+
+    const validStatuses = ["PENDING", "SHIPPED", "OUT_FOR_DELIVERY", "DELIVERED", "CANCELLED"];
+    if (!validStatuses.includes(status)) {
+      return res.status(400).json({ success: false, message: "Invalid status" });
+    }
+
     const order = await Order.findById(orderId);
-    if (!order) return res.status(404).json({ error: "Order not found" });
-    order.deliveredAt = new Date();
+    if (!order) {
+      return res.status(404).json({ success: false, message: "Order not found" });
+    }
+
+    order.status = status;
+
+    //  Push timestamp for this status
+    order.statusHistory.push({ status, updatedAt: new Date() });
+
+    if (status === "DELIVERED") order.deliveredAt = new Date();
+
     await order.save();
-    res.json(order);
+
+    res.status(200).json({ success: true, message: "Order status updated", data: order });
   } catch (error) {
-    res.status(500).json({ error: "Failed to update delivery status" });
+    console.log(error);
+    res.status(500).json({ success: false, message: "Failed to update order status" });
   }
 };
 
@@ -294,6 +313,50 @@ const cartNotification = async (req, res) => {
     res.json(carts);
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch cart notifications" });
+  }
+};
+getRecentOrders =
+async (req, res) => {
+
+  try {
+
+    const orders =
+      await Order.find()
+
+        .populate(
+          "userId",
+          "firstName email username"
+        )
+
+        .populate(
+          "items.productId"
+        )
+
+        .sort({
+
+          createdAt: -1,
+        })
+
+        .limit(10);
+
+    res.status(200).json({
+
+      success: true,
+
+      data: orders,
+    });
+
+  } catch (error) {
+
+    console.log(error);
+
+    res.status(500).json({
+
+      success: false,
+
+      message:
+        "Server Error",
+    });
   }
 };
 
@@ -336,6 +399,7 @@ module.exports = {
   getRecentConfirmedOrdersCount,
   getTotalSale,
 
-  markOrderAsDelivered,
-  cartNotification
+  updateOrderStatus,
+  cartNotification,
+  getRecentOrders
 };

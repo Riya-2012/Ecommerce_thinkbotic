@@ -3,6 +3,7 @@ const userController = require("../controllers/User-Controller");
 const authMiddleware = require("../middleware/auth-middleware");
 const adminMiddleware = require("../middleware/admin-middleware");
 const { addRecentlyViewed, getRecentlyViewed } = require("../controllers/recently-ViewedController");
+const { createContact, getAllQueries, getOneQuery, updateQueryStatus } = require("../controllers/contactController");
 
 const router = express.Router();
 
@@ -60,6 +61,11 @@ router.get("/my-reviews", authMiddleware, userController.getMyReviews);
 router.post("/recentlyViewed",authMiddleware,addRecentlyViewed);
 router.get("/recentlyViewed",authMiddleware,getRecentlyViewed);
 
+// contact queries
+router.post("/contact/create",authMiddleware,createContact);
+router.get("/contact",authMiddleware,getAllQueries);
+router.get("/contact/:id",authMiddleware,getOneQuery);
+router.put("/contact/status/:id",authMiddleware,updateQueryStatus)
 
 
 module.exports = router;

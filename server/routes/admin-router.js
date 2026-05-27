@@ -170,10 +170,10 @@ router.route("/orders/total-sale")
     .get(authMiddleware, adminMiddleware, adminController.getTotalSale);
 
 router.put(
-  "/order/:orderId/deliver",
+  "/order/:orderId/status",
   authMiddleware,
   adminMiddleware,
-  adminController.markOrderAsDelivered // <-- Use controller function
+  adminController.updateOrderStatus // <-- Use controller function
 );
 
 // User submits question
@@ -195,4 +195,6 @@ router.route("/banner").post(authMiddleware,adminMiddleware,uploadSingle, addBan
 router.route("/banner").get( getBanners)
 router.route("/banner/:id").put(authMiddleware,adminMiddleware,uploadSingle,updateBanner)
 router.route("/banner/:id").delete(authMiddleware,adminMiddleware, deleteBanner )
+
+router.route("/recentOrders").get(authMiddleware,adminMiddleware,adminController.getRecentOrders)
 module.exports = router;

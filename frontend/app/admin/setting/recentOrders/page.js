@@ -14,15 +14,26 @@ const {user}= useAuth();
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await api.get(`api/user/orders`);
-      const data=res.data;
-        console.log("recentOrders",res.data)
-        if (Array.isArray(data)) {
-          setOrders(data);
+        const res = await api.get(`api/admin/recentOrders`);
+    
+      const data =
+res.data.data;
 
-        } else {
-          setOrders([]);
-        }
+console.log(
+"recentOrders",
+data
+);
+
+if (
+Array.isArray(data)
+) {
+
+  setOrders(data);
+
+} else {
+
+  setOrders([]);
+}
       } catch (err) {
         setOrders([]);
       }
@@ -121,7 +132,7 @@ const {user}= useAuth();
 
                 User:
                 {" "}
-                {order.userId}
+                {order.userId?.firstNAme}
 
               </p>
 

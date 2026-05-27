@@ -81,7 +81,39 @@ export default function OrderInvoice() {
 
   }, [orderId]);
 
+const preloadImages =
+async () => {
+
+  const images =
+document.images;
+
+  const promises =
+[...images].map(
+(img) => {
+
+return new Promise(
+(resolve) => {
+
+if (img.complete)
+return resolve();
+
+img.onload =
+resolve;
+
+img.onerror =
+resolve;
+}
+);
+}
+);
+
+  await Promise.all(
+promises
+  );
+};
+
   // DOWNLOAD PDF
+
 
 const handleDownload =
 async () => {
@@ -92,7 +124,7 @@ async () => {
       invoiceRef.current;
 
     if (!input) return;
-
+await preloadImages();
     const canvas =
       await html2canvas(
 
@@ -100,9 +132,10 @@ async () => {
 
         {
 
-          scale: 2,
+          scale: 3,
 
           useCORS: true,
+          imageTimeout: 0,
 
           allowTaint: true,
 
@@ -346,16 +379,16 @@ pdfHeight;
 
         {/* HEADER */}
 
-        <div className="  text-white px-6 sm:px-10 pt-8 flex flex-col sm:flex-row justify-between gap-6 bg-[#f8fafc] ">
+        <div className="  text-white px-6 sm:px-10 pt-8 flex flex-col sm:flex-row justify-between gap-6 bg-[#f8fafc] pb-4">
 
           <div>
 
-            <h1 className="text-4xl font-bold text-blue-600 tracking-wide">
+            <h1 className="text-4xl font-bold text-primary-blue tracking-wide">
 
               INVOICE
 
             </h1>
-            <p className="mt-2 text-sm opacity-90 text-red-500">
+            <p className="mt-2 text-sm opacity-90 text-primary-red">
 
               Thank you for shopping with us
 
@@ -363,11 +396,11 @@ pdfHeight;
 
           </div>
 
-          <div className="flex flex-col items-start sm:items-end">
+          <div className="flex flex-col items-start sm:items-end ">
 
-            <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center overflow-hidden">
+            <div className=" flex items-center justify-center overflow-hidden">
 
-              <Image
+              <img
                 src="/favicon.ico"
                 alt="logo"
                 width={50}
@@ -377,11 +410,7 @@ pdfHeight;
 
             </div>
 
-            <h2 className="mt-3 text-xl font-bold">
-
-              Thinkbotic
-
-            </h2>
+           
 
           </div>
 
@@ -457,7 +486,7 @@ pdfHeight;
 
           <div className="bg-[#f8fafc] rounded-2xl p-6">
 
-            <h2 className="font-bold text-blue-600 mb-4 text-lg">
+            <h2 className="font-bold text-primary-blue mb-4 text-lg">
 
               Shipping Address
 
@@ -525,7 +554,7 @@ pdfHeight;
 
           <div className="bg-[#f8fafc] rounded-2xl p-6">
 
-            <h2 className="font-bold text-blue-500 mb-4 text-lg">
+            <h2 className="font-bold text-primary-blue mb-4 text-lg">
 
               Billing Address
 
@@ -710,7 +739,7 @@ pdfHeight;
 
                     {/* PRICE */}
 
-                    <td className="font-semibold text-red-500">
+                    <td className="font-semibold text-primary-red">
 
                       ₹{item?.price}
 
@@ -740,90 +769,82 @@ pdfHeight;
 
         {/* SUMMARY */}
 
-        <div className="px-6 sm:px-10 py-8 border-t border-gray-100 bg-[#fcfcfc]">
+      {/* SUMMARY */}
 
-          <div className="max-w-sm ml-auto space-y-4">
+<div className="px-6 sm:px-10 py-8 border-t border-gray-100 bg-[#fcfcfc]">
 
-            <div className="flex justify-between text-gray-600">
+  <div className="max-w-sm ml-auto space-y-4">
 
-              <span>
+    {
 
-                Subtotal
+order?.orderSummary
+?.pricingDetails
+?.map((item, index) => (
 
-              </span>
+      <div
 
-              <span>
+        key={index}
 
-                ₹
-                {
-                  order?.orderSummary?.subtotal
-                }
+        className={`flex justify-between ${
+          item.label.includes(
+            "Discount"
+          )
 
-              </span>
+            ? "text-green-600"
 
-            </div>
+            : "text-gray-600"
+        }`}
+      >
 
-            <div className="flex justify-between text-gray-600">
+        <span>
 
-              <span>
+          {item.label}
 
-                Shipping
+        </span>
 
-              </span>
+        <span>
 
-              <span>
+          {
 
-                ₹
-                {
-                  order?.orderSummary?.shipping
-                }
+item.label.includes(
+"Discount"
+)
 
-              </span>
+? `- ₹${item.value}`
 
-            </div>
+: `₹${item.value}`
+          }
 
-            <div className="flex justify-between text-green-600">
+        </span>
 
-              <span>
+      </div>
+    ))
+    }
 
-                Discount
+    {/* FINAL TOTAL */}
 
-              </span>
+    <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
 
-              <span>
+      <span className="text-2xl font-bold text-[#0f172a]">
 
-                - ₹
-                {
-                  order?.orderSummary?.discount
-                }
+        Total
 
-              </span>
+      </span>
 
-            </div>
+      <span className="text-2xl font-bold text-primary-red">
 
-            <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
+        ₹
+        {
+          order?.orderSummary?.total
+        }
 
-              <span className="text-2xl font-bold text-[#0f172a]">
+      </span>
 
-                Total
+    </div>
 
-              </span>
+  </div>
 
-              <span className="text-2xl font-bold text-red-500">
-
-                ₹
-                {
-                  order?.orderSummary?.total
-                }
-
-              </span>
-
-            </div>
-
-          </div>
-
-        </div>
-
+</div>
         {/* FOOTER */}
 
         <div className="bg-[#f8fafc] px-6 sm:px-10 py-6 text-center text-sm text-gray-500">
@@ -839,7 +860,7 @@ pdfHeight;
         onClick={
           handleDownload
         }
-className="px-6 py-3 rounded-xl bg-gradient-to-r from-blue-600 to-red-500 text-white font-semibold shadow hover:scale-[1.02] transition mt-8"
+className="px-6 py-3 rounded-xl bg-gradient-blue-red text-white font-semibold shadow hover:scale-[1.02] transition mt-8"
       >
 
         Download Invoice

@@ -449,6 +449,8 @@ const safePayment = {
       })),
       orderSummary,
       payment: safePayment
+       , status: "PENDING",
+      statusHistory: [{ status: "PENDING", updatedAt: new Date() }],
     });
     await order.save();
 

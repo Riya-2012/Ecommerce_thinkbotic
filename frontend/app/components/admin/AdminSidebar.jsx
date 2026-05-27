@@ -77,6 +77,11 @@ const links = [
     href: "/admin/setting/enquiry",
     icon: <FaShoppingCart />,
   },
+     {
+    name: "Contact Queries",
+    href: "/admin/setting/queries",
+    icon: <FaShoppingCart />,
+  },
       {
     name: "Recent Orders",
     href: "/admin/setting/recentOrders",
