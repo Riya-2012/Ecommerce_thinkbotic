@@ -100,6 +100,7 @@ export default function AdminSidebar({ closeSidebar }) {
       <div className="sticky top-0">
 
         {/* USER CARD */}
+        
   <Link href="/user/setting" onClick={() => { if(closeSidebar) closeSidebar(); }}>
        <div className="bg-white  shadow-sm border border-gray-100 p-5">
 

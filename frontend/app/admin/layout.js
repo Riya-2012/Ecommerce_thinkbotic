@@ -42,10 +42,10 @@ console.log("user",user)
       {/* Sidebar container */}
       <div 
         className={`
-          fixed inset-y-0 left-0 z-50 transform bg-[#f8fafc] lg:bg-transparent
+          sticky top-0  left-0  transform bg-[#f8fafc] lg:bg-transparent
           ${sidebarOpen ? "translate-x-0 shadow-2xl" : "-translate-x-full"}
           lg:relative lg:translate-x-0 transition-transform duration-300 ease-in-out
-          w-[280px] lg:w-[300px] h-full overflow-y-auto
+          w-[280px] lg:w-[300px] 
         `}
       >
          <AdminSidebar closeSidebar={() => setSidebarOpen(false)} />
@@ -57,7 +57,7 @@ console.log("user",user)
         <div className="lg:hidden bg-white shadow-sm px-5 py-4 flex items-center justify-between z-10 sticky top-0">
            <div className="flex items-center gap-3">
              <div className="w-8 h-8 rounded-full bg-gradient-blue-red flex items-center justify-center font-bold text-white shadow-sm">
-                T
+                A
              </div>
              <h1 className="font-bold text-lg text-[#0f172a]">Admin Panel</h1>
            </div>

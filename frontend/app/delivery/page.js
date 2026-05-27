@@ -65,11 +65,79 @@ console.log("phone being sent:", selectedShipping.mobile);
 });
             if (res.data.success && res.data.paymentSessionId) {
                 // Save order details to localStorage so we can finalize it after payment success
+
+                console.log({
+
+shippingAddress:
+selectedShipping,
+
+billingAddress:
+selectedBilling,
+
+orderSummary: {
+
+subtotal,
+
+shipping,
+
+discount,
+
+total,
+},
+});
                 localStorage.setItem("pendingOrderDetails", JSON.stringify({
                     shippingAddress: selectedShipping,
-                    billingAddress: selectedBilling ? selectedBilling : selectedShipping,
+                  billingAddress:
+
+selectedBilling ||
+
+selectedShipping,
                     items: cart,
-                    orderSummary: { totalAmount: total },
+                   orderSummary: {
+
+  subtotal,
+
+  shipping,
+
+  discount,
+
+  total,
+
+  pricingDetails: [
+
+    {
+      label:
+        "Cart Total",
+
+      value:
+        subtotal,
+    },
+
+    {
+      label:
+        "Discount",
+
+      value:
+        discount,
+    },
+
+    {
+      label:
+        "Shipping",
+
+      value:
+        shipping,
+    },
+
+    {
+      label:
+        "Order Total",
+
+      value:
+        total,
+    },
+  ],
+},
                     payment: { method: "Cashfree", status: "Pending" }
                 }));
 
