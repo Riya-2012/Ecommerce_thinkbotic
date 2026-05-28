@@ -45,65 +45,65 @@ export default function WishlistPage() {
         {wishlistItems && wishlistItems.length > 0 ? (
           /*  WISHLIST GRID */
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 xl:grid-cols-4 gap-6">
-           {wishlistItems.map((item) => {
+            {wishlistItems.map((item) => {
 
-  const formattedItem = {
-    id:
-      item._id || item.id,
-    image:
-      item.image ||
-      `${BASE_URL}/${item.img}`,
-    title:
-      item.title ||
-      item.name,
+              const formattedItem = {
+                id:
+                  item._id || item.id,
+                image:
+                  item.image ||
+                  `${BASE_URL}/${item.img}`,
+                title:
+                  item.title ||
+                  item.name,
 
-    category:
-      item.category,
+                category:
+                  item.category,
 
-    price:
-      item.price,
+                price:
+                  item.price,
 
-    oldPrice:
-      item.oldPrice,
+                oldPrice:
+                  item.oldPrice,
 
-    rating:
-      item.rating || 4,
+                rating:
+                  item.rating || 4,
 
-    discount:
-      item.discount || 0,
-  };
+                discount:
+                  item.discount || 0,
+              };
 
-  return (
+              return (
 
-    <div
-      key={formattedItem.id}
-      className="relative group"
-    >
+                <div
+                  key={formattedItem.id}
+                  className="relative group"
+                >
 
-      <ProductCard
-        {...formattedItem}
-      />
+                  <ProductCard
+                    {...formattedItem}
+                  />
 
-      <button
+                  <button
 
-        onClick={() =>
+                    onClick={() =>
 
-          removeFromWishlist(
+                      removeFromWishlist(
 
-            formattedItem.id
-          )
-        }
+                        formattedItem.id
+                      )
+                    }
 
-        className="absolute top-3 left-3 bg-white/90 backdrop-blur text-gray-600 hover:text-white hover:bg-primary-red px-3 py-1.5 rounded-full text-xs font-bold shadow-sm opacity-0 group-hover:opacity-100 transition duration-300 z-10"
-      >
+                    className="absolute top-3 left-3 bg-white/90 backdrop-blur text-gray-600 hover:text-white hover:bg-primary-red px-3 py-1.5 rounded-full text-xs font-bold shadow-sm opacity-0 group-hover:opacity-100 transition duration-300 z-10"
+                  >
 
-        Remove
+                    Remove
 
-      </button>
+                  </button>
 
-    </div>
-  );
-})}
+                </div>
+              );
+            })}
           </div>
 
         ) : (

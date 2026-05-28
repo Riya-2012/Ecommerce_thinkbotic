@@ -116,12 +116,16 @@ const  handleIncrease = async (id) => {
 
                     </div>
                 </div>
-
+{
+cartItems.length >0 ? (
 
            <div className="max-w-[1400px] mx-auto px-4 lg:px-10 mt-8 grid grid-cols-1 lg:grid-cols-3 gap-8">
 
   {/*  LEFT SIDE  */}
-  <div className="lg:col-span-2 flex flex-col gap-4">
+
+  
+  
+<div className="lg:col-span-2 flex flex-col gap-4">
 
     {cartItems.map((item) => (
       <div
@@ -214,7 +218,10 @@ const  handleIncrease = async (id) => {
   </div>
 
   {/* RIGHT SIDE */}
-  <div className=" p-2 rounded-2xl   h-fit sticky top-24">
+
+
+
+<div className=" p-2 rounded-2xl   h-fit sticky top-24">
 
     <h2 className="text-xl font-bold mb-4">
       Order Summary
@@ -282,7 +289,37 @@ const discount=oldPriceTotal-subtotal;
 
   </div>
 
+
+    
+
+
 </div>
+
+
+): (
+
+          /*  EMPTY STATE */
+          <div className="bg-white rounded-3xl p-10 text-center flex flex-col items-center justify-center min-h-[450px] border border-gray-100 shadow-sm mt-4">
+            <div className="w-24 h-24 bg-red-50 rounded-full flex items-center justify-center mb-6">
+              <FaHeartBroken className="text-primary-red/40 text-5xl" />
+            </div>
+
+            <h3 className="text-3xl font-bold text-[#0f172a] mb-3">Your Cart is empty</h3>
+            <p className="text-gray-500 max-w-md mx-auto mb-8 leading-relaxed text-lg">
+              Looks like you haven't found anything you love yet. Explore our collections and find something perfect!
+            </p>
+
+            <Link href="/products">
+              <button className="bg-gradient-blue-red text-white px-10 py-3.5 rounded-full font-bold text-lg hover:scale-105 transition-transform shadow-lg shadow-primary-blue/20">
+                Continue Shopping
+              </button>
+            </Link>
+          </div>
+
+        )
+
+    
+}
 
             </div>
         </div>

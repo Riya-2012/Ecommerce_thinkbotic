@@ -97,7 +97,7 @@ console.log("orders data",res.data);
 
                       {/* IMAGE */}
 
-                      <div className="w-full sm:w-[130px] h-[120px] overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
+                      <div className="w-full sm:w-[140px] h-[120px] overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
 
                         <Image
 unoptimized
@@ -127,7 +127,7 @@ unoptimized
                             "Product"
                           }
 
-                          className="w-full h-auto object-cover"
+                          className="w-full h-full object-fit"
                         />
 
                       </div>

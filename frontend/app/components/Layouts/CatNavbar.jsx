@@ -14,24 +14,24 @@ import {
 import api from "@/app/lib/axios";
 
 import {
-usePathname,
-useRouter
+  usePathname,
+  useRouter
 } from "next/navigation";
 
 
 export default function StickyCategoryNav() {
 
   const [show,
-  setShow] =
+    setShow] =
     useState(false);
-const router = useRouter();
+  const router = useRouter();
   const [open,
-  setOpen] =
+    setOpen] =
     useState(false);
 
-  const [categories,setCategories] =
+  const [categories, setCategories] =
     useState([]);
-  
+
 
   // SCROLL
 
@@ -58,179 +58,178 @@ const router = useRouter();
 
   }, []);
 
-const pathname =
-usePathname();
+  const pathname =
+    usePathname();
 
-const handleTodayDeals =
-() => {
+  const handleTodayDeals =
+    () => {
 
-  // ALREADY ON HOME PAGE
+      // ALREADY ON HOME PAGE
 
-  if (pathname === "/") {
+      if (pathname === "/") {
 
-    const section =
+        const section =
 
-document.getElementById(
-"today-deals"
-    );
+          document.getElementById(
+            "today-deals"
+          );
 
-    if (section) {
+        if (section) {
 
-      section.scrollIntoView({
+          section.scrollIntoView({
 
-        behavior: "smooth",
-      });
-    }
-  }
-
-  // OTHER PAGE
-
-  else {
-
-    router.push(
-      "/"
-    );
-
-    setTimeout(() => {
-
-      const section =
-
-document.getElementById(
-"today-deals"
-      );
-
-      if (section) {
-
-section.scrollIntoView({
-
-  behavior: "smooth",
-});
+            behavior: "smooth",
+          });
+        }
       }
 
-    }, 500);
-  }
-};
+      // OTHER PAGE
 
-  // FETCH PRODUCTS
+      else {
 
- useEffect(() => {
+        router.push(
+          "/"
+        );
 
-  const fetchProducts =
-    async () => {
+        setTimeout(() => {
 
-      try {
+          const section =
 
-        const res =
-          await api.get(
-            "/api/comman/products"
-          );
+            document.getElementById(
+              "today-deals"
+            );
 
-        const products =
-          res.data.data || [];
+          if (section) {
 
-        // GROUP PRODUCTS
+            section.scrollIntoView({
 
-        const grouped =
-          {};
-
-        products.forEach(
-          (product) => {
-
-            const category =
-              product.category;
-
-            if (
-              !grouped[
-                category
-              ]
-            ) {
-
-              grouped[
-                category
-              ] = [];
-            }
-
-            // ADD PRODUCT NAME
-
-            grouped[
-              category
-            ].push({
-
-              name:
-                product.name,
-
-              id:
-                product._id,
-
+              behavior: "smooth",
             });
           }
-        );
 
-        // REMOVE DUPLICATES
-
-        Object.keys(grouped)
-          .forEach((key) => {
-
-            grouped[key] =
-              grouped[key].filter(
-
-                (
-                  item,
-                  index,
-                  self
-                ) =>
-
-                  index ===
-
-                  self.findIndex(
-                    (p) =>
-                      p.name ===
-                      item.name
-                  )
-              );
-          });
-
-        // CONVERT ARRAY
-
-        const formatted =
-          Object.keys(
-            grouped
-          ).map(
-            (key) => ({
-
-              title: key,
-
-              items:
-                grouped[
-                  key
-                ],
-
-            })
-          );
-
-        setCategories(
-          formatted
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
+        }, 500);
       }
     };
 
-  fetchProducts();
+  // FETCH PRODUCTS
 
-}, []);
+  useEffect(() => {
+
+    const fetchProducts =
+      async () => {
+
+        try {
+
+          const res =
+            await api.get(
+              "/api/comman/products"
+            );
+
+          const products =
+            res.data.data || [];
+
+          // GROUP PRODUCTS
+
+          const grouped =
+            {};
+
+          products.forEach(
+            (product) => {
+
+              const category =
+                product.category;
+
+              if (
+                !grouped[
+                category
+                ]
+              ) {
+
+                grouped[
+                  category
+                ] = [];
+              }
+
+              // ADD PRODUCT NAME
+
+              grouped[
+                category
+              ].push({
+
+                name:
+                  product.name,
+
+                id:
+                  product._id,
+
+              });
+            }
+          );
+
+          // REMOVE DUPLICATES
+
+          Object.keys(grouped)
+            .forEach((key) => {
+
+              grouped[key] =
+                grouped[key].filter(
+
+                  (
+                    item,
+                    index,
+                    self
+                  ) =>
+
+                    index ===
+
+                    self.findIndex(
+                      (p) =>
+                        p.name ===
+                        item.name
+                    )
+                );
+            });
+
+          // CONVERT ARRAY
+
+          const formatted =
+            Object.keys(
+              grouped
+            ).map(
+              (key) => ({
+
+                title: key,
+
+                items:
+                  grouped[
+                  key
+                  ],
+
+              })
+            );
+
+          setCategories(
+            formatted
+          );
+
+        } catch (error) {
+
+          console.log(error);
+
+        }
+      };
+
+    fetchProducts();
+
+  }, []);
 
   return (
 
     <div
-      className={`w-full z-50 transition-all duration-500 ${
-        show
+      className={`w-full z-50 transition-all duration-500 ${show
           ? "fixed top-0 opacity-100 translate-y-0"
           : "fixed -top-20 opacity-0"
-      }`}
+        }`}
     >
 
       <div className="bg-white/90 backdrop-blur-md shadow-sm">
@@ -253,11 +252,10 @@ section.scrollIntoView({
 
               <FaChevronDown
                 size={12}
-                className={`transition ${
-                  open
+                className={`transition ${open
                     ? "rotate-180"
                     : ""
-                }`}
+                  }`}
               />
 
             </button>
@@ -265,18 +263,17 @@ section.scrollIntoView({
             {/* MEGA MENU */}
 
             <div
-              className={`absolute left-0 mt-4 transition-all duration-300 z-50 ${
-                open
+              className={`absolute left-0 mt-4 transition-all duration-300 z-50 ${open
                   ? "opacity-100 visible translate-y-0"
                   : "opacity-0 invisible translate-y-2"
-              }`}
+                }`}
             >
 
               <div className="bg-white shadow-2xl rounded-2xl w-[95vw] md:w-[600px] lg:w-[700px] p-4 md:p-6">
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
 
-                  {categories.map(
+                  {categories.slice(0,3).map(
                     (
                       section,
                       i
@@ -289,7 +286,7 @@ section.scrollIntoView({
                         {/* CATEGORY */}
 
                         <Link
-                        href={`/products?category=${encodeURIComponent(section.title)}`}
+                          href={`/products?category=${encodeURIComponent(section.title)}`}
                         >
 
                           <h3 className="font-semibold text-primary-blue mb-3 hover:underline cursor-pointer">
@@ -311,18 +308,18 @@ section.scrollIntoView({
                               item,
                               idx
                             ) => (
-<li key={idx}>
+                              <li key={idx}>
 
-  <Link
-    href={`/products/${item.id}`}
-    className="text-sm text-gray-500 hover:text-primary-blue"
-  >
+                                <Link
+                                  href={`/products/${item.id}`}
+                                  className="text-sm text-gray-500 hover:text-primary-blue"
+                                >
 
-    {item.name}
+                                  {item.name}
 
-  </Link>
+                                </Link>
 
-</li>
+                              </li>
                             )
                           )}
 
@@ -353,6 +350,7 @@ section.scrollIntoView({
 
             </Link>
 
+
             <Link
               className="hover:text-primary-blue text-primary-red font-semibold"
               href="/products"
@@ -362,11 +360,11 @@ section.scrollIntoView({
 
             </Link>
 
-           <Link href="/user" >
-            <p className="hover:text-primary-blue cursor-pointer text-primary-red font-semibold">
-              Setting
-            </p>
-           </Link>
+            <Link href="/user" >
+              <p className="hover:text-primary-blue cursor-pointer text-primary-red font-semibold">
+                Setting
+              </p>
+            </Link>
 
             <Link className="hover:text-primary-blue cursor-pointer text-primary-red font-semibold" href="/cart">
 
@@ -380,16 +378,16 @@ section.scrollIntoView({
 
           <div >
 
-          <button
-onClick={
-handleTodayDeals
-} 
-className="bg-gradient-blue-red text-white px-4 py-2 rounded-full text-sm"
->
+            <button
+              onClick={
+                handleTodayDeals
+              }
+              className="bg-gradient-blue-red text-white px-4 py-2 rounded-full text-sm"
+            >
 
-  Today Deals
+              Today Deals
 
-</button>
+            </button>
 
           </div>
 

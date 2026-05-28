@@ -98,7 +98,7 @@ useState("");
   spaceBetween={20}
   grabCursor={true}
   breakpoints={{
-        320: { slidesPerView: 3 },
+        320: { slidesPerView: 2 },
     640: { slidesPerView: 2 },
     768: { slidesPerView: 3 },
     1024: { slidesPerView: 6 }, 

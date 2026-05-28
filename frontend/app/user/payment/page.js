@@ -165,15 +165,15 @@ export default function Page() {
                       unoptimized
                       src={
 
-item?.img
+                        item?.img
 
-? `${BASE_URL}/${item.img}`
+                          ? `${BASE_URL}/${item.img}`
 
-: item?.productId?.img
+                          : item?.productId?.img
 
-? `${BASE_URL}/${item.productId.img}`
+                            ? `${BASE_URL}/${item.productId.img}`
 
-: "/no-image.png"
+                            : "/no-image.png"
                       }
 
                       width={100}
@@ -182,14 +182,14 @@ item?.img
 
                       alt={
 
-item?.title ||
+                        item?.title ||
 
-item?.productId?.name ||
+                        item?.productId?.name ||
 
-"Product"
+                        "Product"
                       }
 
-                      className="w-full h-full object-cover"
+                      className="w-full h-full object-fit"
                     />
 
                   </div>
@@ -204,11 +204,11 @@ item?.productId?.name ||
 
                       {
 
-item?.category ||
+                        item?.category ||
 
-item?.productId?.category ||
+                        item?.productId?.category ||
 
-"N/A"
+                        "N/A"
                       }
 
                     </p>
@@ -219,11 +219,11 @@ item?.productId?.category ||
 
                       {
 
-item?.title ||
+                        item?.title ||
 
-item?.productId?.name ||
+                        item?.productId?.name ||
 
-"Product"
+                        "Product"
                       }
 
                     </h2>
@@ -287,9 +287,9 @@ item?.productId?.name ||
 
                           {
 
-new Date(
-order?.createdAt
-).toLocaleDateString()
+                            new Date(
+                              order?.createdAt
+                            ).toLocaleDateString()
                           }
 
                         </h4>

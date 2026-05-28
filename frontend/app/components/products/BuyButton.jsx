@@ -10,9 +10,17 @@ import {
   useCart
 } from "@/app/context/CartContext";
 
+
+
 function BuyNow({
 
-  product
+  product,
+
+  qty = 1,
+
+  selectedColor,
+  className=""
+
 }) {
 
   const router =
@@ -51,7 +59,9 @@ function BuyNow({
         category:
           product.category,
 
-        quantity: 1,
+        quantity: qty,
+        imageColor:
+selectedColor || "",
       });
 
       // GO TO CART
@@ -65,11 +75,9 @@ function BuyNow({
 
     <button
 
-      onClick={
-        handleBuyNow
-      }
+      onClick={handleBuyNow}
 
-      className="bg-gradient-blue-red text-white px-6 py-2 rounded-full text-xs font-medium shadow hover:opacity-90 transition"
+      className={ `bg-gradient-blue-red text-white px-6 py-2 rounded-full text-xs font-medium shadow hover:opacity-90 transition  ${className} `}
     >
 
       Buy Now

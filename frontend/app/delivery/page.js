@@ -15,7 +15,7 @@ export default function CheckoutPage() {
     const [cart, setCart] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isProcessing, setIsProcessing] = useState(false);
-    
+
     // Address selection state lifted from Address.jsx
     const [selectedShipping, setSelectedShipping] = useState(null);
     const [selectedBilling, setSelectedBilling] = useState(null);
@@ -36,16 +36,25 @@ export default function CheckoutPage() {
         fetchCart();
     }, []);
 
-   const handleContinueToPayment = (shippingAddr, billingAddr) => {
-    // Extract the nested shipping object
-    setSelectedShipping(shippingAddr?.shipping || shippingAddr);
-    setSelectedBilling(billingAddr?.billing || billingAddr);
-    setStep(2);
-};
+    const handleContinueToPayment = (shippingAddr, billingAddr) => {
+        // Extract the nested shipping object
+        console.log(
+"shippingAddr",
+shippingAddr
+);
+
+console.log(
+"billingAddr",
+billingAddr
+);
+        setSelectedShipping(shippingAddr?.shipping || shippingAddr);
+        setSelectedBilling(billingAddr?.billing || billingAddr);
+        setStep(2);
+    };
 
     const handlePlaceOrder = async (total) => {
         console.log("selectedShipping:", selectedShipping);
-console.log("phone being sent:", selectedShipping.mobile);
+        console.log("phone being sent:", selectedShipping.mobile);
         if (!selectedShipping) {
             return toast.error("Please select a shipping address first");
         }
@@ -57,87 +66,87 @@ console.log("phone being sent:", selectedShipping.mobile);
         try {
             console.log("Shipping address object:", selectedShipping);
             // 1. Create order on backend to get Cashfree session
-          const res = await api.post("/api/user/create-order", {
-    amount: total,
-    customerName: selectedShipping?.shipping?.fullName || selectedShipping?.fullName,
-    customerEmail: user?.email || "customer@example.com",
-    customerPhone: selectedShipping?.shipping?.mobile || selectedShipping?.mobile,
-});
+            const res = await api.post("/api/user/create-order", {
+                amount: total,
+                customerName: selectedShipping?.shipping?.fullName || selectedShipping?.fullName,
+                customerEmail: user?.email || "customer@example.com",
+                customerPhone: selectedShipping?.shipping?.mobile || selectedShipping?.mobile,
+            });
             if (res.data.success && res.data.paymentSessionId) {
                 // Save order details to localStorage so we can finalize it after payment success
 
                 console.log({
 
-shippingAddress:
-selectedShipping,
+                    shippingAddress:
+                        selectedShipping,
 
-billingAddress:
-selectedBilling,
+                    billingAddress:
+                        selectedBilling,
 
-orderSummary: {
+                    orderSummary: {
 
-subtotal,
+                        subtotal,
 
-shipping,
+                        shipping,
 
-discount,
+                        discount,
 
-total,
-},
-});
+                        total,
+                    },
+                });
                 localStorage.setItem("pendingOrderDetails", JSON.stringify({
                     shippingAddress: selectedShipping,
-                  billingAddress:
+                    billingAddress:
 
-selectedBilling ||
+                        selectedBilling ||
 
-selectedShipping,
+                        selectedShipping,
                     items: cart,
-                   orderSummary: {
+                    orderSummary: {
 
-  subtotal,
+                        subtotal,
 
-  shipping,
+                        shipping,
 
-  discount,
+                        discount,
 
-  total,
+                        total,
 
-  pricingDetails: [
+                        pricingDetails: [
 
-    {
-      label:
-        "Cart Total",
+                            {
+                                label:
+                                    "Cart Total",
 
-      value:
-        subtotal,
-    },
+                                value:
+                                    subtotal,
+                            },
 
-    {
-      label:
-        "Discount",
+                            {
+                                label:
+                                    "Discount",
 
-      value:
-        discount,
-    },
+                                value:
+                                    discount,
+                            },
 
-    {
-      label:
-        "Shipping",
+                            {
+                                label:
+                                    "Shipping",
 
-      value:
-        shipping,
-    },
+                                value:
+                                    shipping,
+                            },
 
-    {
-      label:
-        "Order Total",
+                            {
+                                label:
+                                    "Order Total",
 
-      value:
-        total,
-    },
-  ],
-},
+                                value:
+                                    total,
+                            },
+                        ],
+                    },
                     payment: { method: "Cashfree", status: "Pending" }
                 }));
 
@@ -151,14 +160,14 @@ selectedShipping,
                 });
             } else {
                 toast.error("Failed to initialize payment session");
-                
+
                 setIsProcessing(false);
             }
         } catch (error) {
             console.error("Payment initiation error:", error);
-  const errData = error.response?.data;
-  console.log("ERR DATA RAW:", JSON.stringify(errData));
-  console.log("ERR MESSAGE:", errData?.message || errData?.error || errData?.msg);
+            const errData = error.response?.data;
+            console.log("ERR DATA RAW:", JSON.stringify(errData));
+            console.log("ERR MESSAGE:", errData?.message || errData?.error || errData?.msg);
             toast.error("An error occurred while starting payment");
             setIsProcessing(false);
         }
@@ -171,7 +180,7 @@ selectedShipping,
     const subtotal = cart.reduce((acc, item) => acc + item.price * (item.quantity || item.qty || 1), 0);
     const oldPriceTotal = cart.reduce((acc, item) => acc + (item.oldPrice || item.price) * (item.quantity || item.qty || 1), 0);
     const discount = oldPriceTotal > subtotal ? oldPriceTotal - subtotal : 0;
-    const shipping = subtotal > 500 ? 0 : 50; 
+    const shipping = subtotal > 500 ? 0 : 50;
     const total = subtotal + shipping;
 
     return (
@@ -180,7 +189,7 @@ selectedShipping,
                 {/* LEFT SIDE: STEPS */}
                 <div className="lg:col-span-2 flex flex-col gap-5">
                     <Address onContinueToPayment={handleContinueToPayment} />
-                    
+
                     {/* STEP 2: PAYMENT */}
                     {step === 2 && (
                         <div className="bg-white rounded-2xl shadow-md ring-4 ring-primary-blue/5 border border-primary-blue/30 p-6 animate-in fade-in duration-300">
@@ -190,20 +199,20 @@ selectedShipping,
                             <p className="text-gray-600 mb-6">
                                 You are about to pay <span className="font-bold text-lg text-primary-red">₹{total}</span> using Cashfree secure gateway.
                             </p>
-                            
-                            <button 
+
+                            <button
                                 onClick={() => handlePlaceOrder(total)}
                                 disabled={isProcessing}
                                 className="w-full md:w-auto px-10 py-4 bg-gradient-blue-red text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-70 flex justify-center items-center gap-2"
                             >
                                 {isProcessing ? (
-                                   <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                    <span className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                                 ) : (
-                                    <FaLock className="text-sm opacity-80" /> 
+                                    <FaLock className="text-sm opacity-80" />
                                 )}
                                 {isProcessing ? "Initializing Payment..." : `Pay ₹${total} Securely`}
                             </button>
-                            
+
                             <div className="mt-6 flex flex-col items-start gap-2 text-xs text-gray-400 font-medium bg-gray-50 rounded-xl p-4">
                                 <div className="flex items-center gap-1.5 text-gray-500">
                                     <MdOutlineSecurity className="text-lg text-green-500" />
@@ -220,7 +229,7 @@ selectedShipping,
                     <h2 className="text-xl font-bold mb-4 border-b border-gray-100 pb-4">
                         Order Summary
                     </h2>
-                    
+
                     <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
                         {cart.length === 0 ? (
                             <p className="text-gray-500 text-sm">Your cart is empty.</p>
@@ -228,15 +237,15 @@ selectedShipping,
                             cart.map(item => {
                                 if (!item) return null;
                                 return (
-                                <div key={item?.productId || item?._id || Math.random()} className="flex gap-4">
-                                    <div className="flex-grow flex flex-col justify-center">
-                                        <h4 className="text-sm font-semibold text-gray-800 line-clamp-2">{item?.name || item?.title || "Product"}</h4>
-                                        <div className="flex justify-between items-center text-sm mt-1">
-                                            <span className="text-gray-500">Qty: {item?.quantity || item?.qty || 1}</span>
-                                            <span className="font-bold text-gray-900">₹{item?.price || 0}</span>
+                                    <div key={item?.productId || item?._id || Math.random()} className="flex gap-4">
+                                        <div className="flex-grow flex flex-col justify-center">
+                                            <h4 className="text-sm font-semibold text-gray-800 line-clamp-2">{item?.name || item?.title || "Product"}</h4>
+                                            <div className="flex justify-between items-center text-sm mt-1">
+                                                <span className="text-gray-500">Qty: {item?.quantity || item?.qty || 1}</span>
+                                                <span className="font-bold text-gray-900">₹{item?.price || 0}</span>
+                                            </div>
                                         </div>
                                     </div>
-                                </div>
                                 );
                             })
                         )}

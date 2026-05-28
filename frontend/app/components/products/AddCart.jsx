@@ -18,6 +18,8 @@ function AddCart({
   product,
 
   selectedColor,
+  qty=1,
+  className=""
 
 }) {
 
@@ -70,7 +72,7 @@ function AddCart({
           category:
             product.category,
 
-          quantity: 1,
+          quantity: qty,
 
           imageColor:
             selectedColor || "",
@@ -92,7 +94,21 @@ function AddCart({
 
     <button
 
-      className="bg-white text-primary-blue px-8 py-2 rounded-full text-xs font-medium shadow hover:bg-gray-100 transition"
+className={`
+
+bg-white
+text-primary-blue
+px-8
+py-2
+rounded-full
+text-xs
+font-medium
+shadow
+hover:bg-gray-100
+transition
+
+${className}
+`}
 
       onClick={(e) => {
 

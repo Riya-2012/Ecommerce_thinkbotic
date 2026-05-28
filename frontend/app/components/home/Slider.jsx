@@ -22,7 +22,7 @@ export default function ProductSlider({ products, title, variant = "default" }) 
         spaceBetween={20}
         grabCursor={true}
         breakpoints={{
-          320: { slidesPerView: 2 },
+          320: { slidesPerView: 1 },
           640: { slidesPerView: 2 },
           1024: { slidesPerView: 4 },
         }}

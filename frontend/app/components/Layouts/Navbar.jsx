@@ -194,23 +194,61 @@ const logoItem =
 
 </div>
 
-        
-
-          <div className="md:hidden flex items-center gap-4">
+      
+            <div className="md:hidden flex items-center gap-4">
 
             <CiHeart size={22} />
             <RiShoppingCart2Line size={22} />
 
-            <button onClick={() => setMenuOpen(!menuOpen)}>
-              {menuOpen ? <FaTimes size={22} /> : <FaBars size={22} />}
-            </button>
+     {
+      
+user ? (
 
-          </div>
+  <Link href="/user">
 
+    <div className="w-9 h-9 rounded-full bg-gradient-blue-red text-white flex items-center justify-center font-semibold text-sm shadow-sm">
+
+      {
+user?.username
+?.charAt(0)
+?.toUpperCase()
+      }
+
+    </div>
+
+  </Link>
+
+) : (
+
+  <button
+    onClick={() =>
+setMenuOpen(
+!menuOpen
+)
+}
+  >
+
+    {
+
+menuOpen
+
+? <FaTimes size={22} />
+
+: <FaBars size={22} />
+    }
+
+  </button>
+
+)
+}
+          </div>     
         </div>
 
   {/* mobile */}
-        {menuOpen && (
+
+  
+      <div>
+          {menuOpen && (
           <div className="md:hidden mt-4 space-y-4 border-t pt-4">
 
             {/* SEARCH */}
@@ -225,6 +263,7 @@ const logoItem =
             </div>
 
             {/* BUTTONS */}
+            
             <div className="flex gap-3">
               <button className="flex-1 bg-primary-red text-white py-2 rounded-full">
                 Sign Up
@@ -236,6 +275,7 @@ const logoItem =
 
           </div>
         )}
+      </div>
 
       </div>
     </div>

@@ -5,20 +5,22 @@ import api, { BASE_URL } from "@/app/lib/axios";
 import Image from "next/image";
 import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
+import { FaStar } from "react-icons/fa";
+import Review from "@/app/components/Review";
 
 const steps = [
-  { key: "PENDING",          label: "Order Confirmed"  },
-  { key: "SHIPPED",          label: "Shipped"          },
+  { key: "PENDING", label: "Order Confirmed" },
+  { key: "SHIPPED", label: "Shipped" },
   { key: "OUT_FOR_DELIVERY", label: "Out For Delivery" },
-  { key: "DELIVERED",        label: "Delivered"        },
+  { key: "DELIVERED", label: "Delivered" },
 ];
 
 export default function Page() {
-  const params  = useParams();
+  const params = useParams();
   const orderId = params.id;
   const { user } = useAuth();
 
-  const [order,   setOrder]   = useState(null);
+  const [order, setOrder] = useState(null);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,7 +37,7 @@ export default function Page() {
     if (user && orderId) fetchOrder();
   }, [user, orderId]);
 
-  const item        = order?.items?.[0];
+  const item = order?.items?.[0];
   // ✅ Find which step index the current status is at
   const currentStep = steps.findIndex((s) => s.key === order?.status);
 
@@ -141,7 +143,7 @@ export default function Page() {
                   <div className="space-y-8">
                     {steps.map((step, index) => {
                       const isCompleted = index <= currentStep;
-                      const isActive    = index === currentStep;
+                      const isActive = index === currentStep;
 
                       // ✅ Get date from statusHistory for this step
                       const historyEntry = order?.statusHistory?.find(
@@ -151,13 +153,13 @@ export default function Page() {
                       const stepDate =
                         step.key === "PENDING"
                           ? new Date(order?.createdAt).toLocaleDateString("en-IN", {
-                              day: "numeric", month: "short", year: "numeric",
-                            })
+                            day: "numeric", month: "short", year: "numeric",
+                          })
                           : historyEntry
-                          ? new Date(historyEntry.updatedAt).toLocaleDateString("en-IN", {
+                            ? new Date(historyEntry.updatedAt).toLocaleDateString("en-IN", {
                               day: "numeric", month: "short", year: "numeric",
                             })
-                          : null;
+                            : null;
 
                       return (
                         <div key={step.key} className="relative flex gap-5 items-start">
@@ -174,9 +176,8 @@ export default function Page() {
                           <div>
                             {/* STEP LABEL */}
                             <div className="flex items-center gap-2">
-                              <h3 className={`font-bold text-sm ${
-                                isCompleted ? "text-[#0f172a]" : "text-gray-400"
-                              }`}>
+                              <h3 className={`font-bold text-sm ${isCompleted ? "text-[#0f172a]" : "text-gray-400"
+                                }`}>
                                 {step.label}
                               </h3>
 
@@ -196,9 +197,8 @@ export default function Page() {
                             </div>
 
                             {/* ✅ DATE — show if available, else "Pending" */}
-                            <p className={`text-xs mt-0.5 ${
-                              stepDate ? "text-gray-500" : "text-gray-300"
-                            }`}>
+                            <p className={`text-xs mt-0.5 ${stepDate ? "text-gray-500" : "text-gray-300"
+                              }`}>
                               {stepDate ?? "Pending"}
                             </p>
                           </div>
@@ -209,48 +209,71 @@ export default function Page() {
                 </div>
               </div>
 
+              {/* review */}
+ 
+
+ {order.deliveredAt && (
+
+<Review
+
+productId={
+item?.productId?._id
+}
+
+/>
+
+
+ )
+}
+
+   
+
+
+
             </div>
+         
+          </div>
+        </div>
+      
+
+      {/* RIGHT */}
+      <div className="space-y-4">
+
+        {/* SHIPPING */}
+        <div className="bg-white border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-primary-blue">Shipping Address</h2>
+          <div className="space-y-2 mt-3">
+            <h3 className="font-semibold text-lg text-[#0f172a]">{order?.shippingAddress?.fullName}</h3>
+            <p className="text-gray-600">Phone : {order?.shippingAddress?.mobile}</p>
+            <p className="text-gray-600 leading-relaxed">
+              {order?.shippingAddress?.address}, {order?.shippingAddress?.city}, {order?.shippingAddress?.state}
+            </p>
           </div>
         </div>
 
-        {/* RIGHT */}
-        <div className="space-y-4">
-
-          {/* SHIPPING */}
-          <div className="bg-white border border-gray-100 shadow-sm p-6">
-            <h2 className="text-lg font-bold text-primary-blue">Shipping Address</h2>
-            <div className="space-y-2 mt-3">
-              <h3 className="font-semibold text-lg text-[#0f172a]">{order?.shippingAddress?.fullName}</h3>
-              <p className="text-gray-600">Phone : {order?.shippingAddress?.mobile}</p>
-              <p className="text-gray-600 leading-relaxed">
-                {order?.shippingAddress?.address}, {order?.shippingAddress?.city}, {order?.shippingAddress?.state}
-              </p>
-            </div>
+        {/* BILLING */}
+        <div className="bg-white border border-gray-100 shadow-sm p-6">
+          <h2 className="text-lg font-bold text-primary-blue">Billing Address</h2>
+          <div className="space-y-2 mt-3">
+            <h3 className="font-semibold text-lg text-[#0f172a]">{order?.billingAddress?.fullName}</h3>
+            <p className="text-gray-600">Phone : {order?.billingAddress?.mobile}</p>
+            <p className="text-gray-600 leading-relaxed">
+              {order?.billingAddress?.address}, {order?.billingAddress?.city}, {order?.billingAddress?.state}
+            </p>
           </div>
-
-          {/* BILLING */}
-          <div className="bg-white border border-gray-100 shadow-sm p-6">
-            <h2 className="text-lg font-bold text-primary-blue">Billing Address</h2>
-            <div className="space-y-2 mt-3">
-              <h3 className="font-semibold text-lg text-[#0f172a]">{order?.billingAddress?.fullName}</h3>
-              <p className="text-gray-600">Phone : {order?.billingAddress?.mobile}</p>
-              <p className="text-gray-600 leading-relaxed">
-                {order?.billingAddress?.address}, {order?.billingAddress?.city}, {order?.billingAddress?.state}
-              </p>
-            </div>
-          </div>
-
-          {/* ORDER SUMMARY */}
-          <div className="bg-white border border-gray-100 shadow-sm p-6">
-            <h2 className="text-xl font-bold text-primary-red mb-6">Order Summary</h2>
-            <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
-              <span className="text-xl font-semibold text-[#0f172a]">Total</span>
-              <span className="text-xl font-semibold text-primary-red">₹{order?.orderSummary?.total}</span>
-            </div>
-          </div>
-
         </div>
+
+        {/* ORDER SUMMARY */}
+        <div className="bg-white border border-gray-100 shadow-sm p-6">
+          <h2 className="text-xl font-bold text-primary-red mb-6">Order Summary</h2>
+          <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
+            <span className="text-xl font-semibold text-[#0f172a]">Total</span>
+            <span className="text-xl font-semibold text-primary-red">₹{order?.orderSummary?.total}</span>
+          </div>
+        </div>
+
       </div>
     </div>
+     </div>
   );
 }
