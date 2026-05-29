@@ -15,6 +15,7 @@ import api ,{BASE_URL} from "@/app/lib/axios";
 import Image from "next/image";
 
 import Link from "next/link";
+import Pagination from "@/app/components/Pagination";
 
 export default function Page() {
 
@@ -24,7 +25,12 @@ export default function Page() {
   const [orders,
     setOrders] =
     useState([]);
-
+const [page,
+    setPage] =
+    useState(1);
+const [totalPages,
+setTotalPages] =
+useState(1);
 
 
   useEffect(() => {
@@ -36,12 +42,15 @@ export default function Page() {
 
           const res =
             await api.get(
-              "/api/user/orders"
+            `/api/user/orders?page=${page}&limit=2`
             );
 
           const data =
-            res.data;
+            res.data.data;
 console.log("orders data",res.data);
+setTotalPages(
+res.data.totalPages
+);
           if (
             Array.isArray(data)
           ) {
@@ -66,7 +75,7 @@ console.log("orders data",res.data);
       fetchOrders();
     }
 
-  }, [user]);
+  }, [user,page]);
   
 
   return (
@@ -100,7 +109,7 @@ console.log("orders data",res.data);
                       <div className="w-full sm:w-[140px] h-[120px] overflow-hidden border border-gray-100 bg-gray-50 shrink-0">
 
                         <Image
-unoptimized
+                        unoptimized
                           src={
 
                             item.img
@@ -245,8 +254,7 @@ unoptimized
                       <span
 
                         className={`px-4 py-1.5 rounded-full text-xs font-bold
-
-${order.payment?.status ===
+                          ${order.payment?.status ===
                             "PAID"
 
                             ? "bg-green-100 text-green-600"
@@ -306,6 +314,15 @@ ${order.payment?.status ===
 
           </div>
         )}
+ <Pagination
+
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
 
       </div>
 

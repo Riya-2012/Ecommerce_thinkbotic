@@ -10,9 +10,9 @@ import { MdDescription } from "react-icons/md";
 function ContactModal() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
-const {user}= useAuth();
+  const { user } = useAuth();
 
-const [formData,SetFormData]=useState()
+  const [formData, SetFormData] = useState()
 
   useEffect(() => {
 
@@ -40,26 +40,26 @@ const [formData,SetFormData]=useState()
 
   }, []);
 
-useEffect(() => {
+  useEffect(() => {
 
-  if (user) {
+    if (user) {
 
-    SetFormData({
+      SetFormData({
 
-      name:
-        user?.firstname || "",
+        name:
+          user?.firstname || "",
 
-      email:
-        user?.email || "",
+        email:
+          user?.email || "",
 
-      phone:
-        user?.phone || "",
+        phone:
+          user?.phone || "",
 
-      description: "",
-    });
-  }
+        description: "",
+      });
+    }
 
-}, [user]);
+  }, [user]);
 
   const handleChange = (e) => {
     SetFormData({
@@ -70,41 +70,134 @@ useEffect(() => {
     })
   }
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      setLoading(true);
+const handleSubmit =
+async (e) => {
 
-      const res = await api.post("api/user/contact/create", formData);
+  e.preventDefault();
 
-      console.log(res.data);
-      if (res.data.success) {
-        toast.success("Query submitted successfully");
+  // NAME REGEX
 
-      }
-      SetFormData(
-        {
-          name: "",
-          email: "",
-          phone: "",
-          description: "",
+  const NameRegex =
+/^[A-Za-z ]+$/;
 
-        }
-      )
-      setOpen(false);
+  if (
+!NameRegex.test(
+formData.name.trim()
+)
+  ) {
 
+    toast.error(
 
-    }
-    catch (err) {
-      console.log(err);
-      toast.error("Something went wrong");
-    }
+"Name should contain only letters"
 
-    finally {
-      setLoading(false);
+    );
 
-    }
+    return;
   }
+
+  // NAME LENGTH
+
+  if (
+formData.name
+.trim().length < 2
+  ) {
+
+    toast.error(
+
+"Name must be at least 2 characters"
+
+    );
+
+    return;
+  }
+
+  // EMAIL
+
+  const emailRegex =
+
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+  if (
+!emailRegex.test(
+formData.email
+)
+  ) {
+
+    toast.error(
+"Invalid email"
+);
+
+    return;
+  }
+
+  // PHONE
+
+  const phoneRegex =
+/^[0-9]{10}$/;
+
+  if (
+!phoneRegex.test(
+formData.phone
+)
+  ) {
+
+    toast.error(
+"Phone must be 10 digits"
+);
+
+    return;
+  }
+
+  // DESCRIPTION
+
+  if (
+formData.description
+.trim().length < 5
+  ) {
+
+    toast.error(
+"Description too short"
+);
+
+    return;
+  }
+
+  try {
+
+setLoading(true);
+
+    const res =
+await api.post(
+
+"/api/user/contact/create",
+
+formData
+    );
+
+    toast.success(
+
+"Query submitted successfully"
+
+    );
+
+  } catch (err) {
+
+console.log(err);
+
+    toast.error(
+
+err.response?.data?.message ||
+
+"Something went wrong"
+    );
+
+  } finally {
+
+setLoading(false);
+  }
+};
+
+
 
   return (
     <>

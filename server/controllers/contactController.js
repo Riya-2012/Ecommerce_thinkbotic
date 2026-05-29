@@ -24,7 +24,19 @@ res.status(200).json({
 // create contact
 exports.createContact= async(req,res)=>{
     try{
-const {name,email,phone,description}= req.body;
+
+const name =
+req.body.name?.trim();
+
+const email =
+req.body.email?.trim();
+
+const phone =
+req.body.phone?.trim();
+
+const description =
+req.body.description?.trim();
+
 if(!name || !email || !phone || !description){
     res.status(400).json({
         success:false,

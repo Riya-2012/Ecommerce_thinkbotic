@@ -9,11 +9,20 @@ const nodemailer = require("nodemailer");
 // Generic function for fetching all records
 const getAll = (Model, modelName) => async (req, res) => {
   try {
-    const data = await Model.find({});
+      const page= Number(req.query.page)|| 1;
+const limit= Number(req.query.limit) || 10;
+const skip=(page-1)*limit;
+    const data = await Model.find({}).skip(skip)
+      .limit(limit);
+      const totalDocuments =await Model.countDocuments();
+      const totalPages = Math.ceil(totalDocuments / limit);
     return res.status(200).json({
       success: true,
       message: data.length === 0 ? `No ${modelName} found` : `${modelName} fetched successfully`,
       data,
+      totalPages,
+      currentPage: page,
+      totalDocuments
     });
   } catch (error) {
     console.error(`Error fetching ${modelName}:`, error);
@@ -58,7 +67,7 @@ const getProductDetails = async (req, res) => {
 
 const getTopRatedProducts = async (req, res) => {
   try {
-    const topRatedProducts = await ProductPage.find({}).sort({ rating: -1 }).limit(4); // Fetch top 4 rated products
+    const topRatedProducts = await ProductPage.find({}).sort({ rating: -1 }).limit(4); 
     if (!topRatedProducts || topRatedProducts.length === 0) {
       return res.status(404).json({ msg: "No top-rated products found" });
     }
@@ -205,6 +214,7 @@ const getProductCards = async (req, res) => {
     });
   }
 };
+
 
 const getTopDiscountedProducts =
   async (req, res) => {

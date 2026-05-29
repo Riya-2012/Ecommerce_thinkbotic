@@ -22,6 +22,7 @@ import { MdEdit } from "react-icons/md";
 
 import Searchbar
 from "@/app/components/admin/Searchbar";
+import Pagination from "@/app/components/Pagination";
 
 export default function Page() {
 
@@ -42,7 +43,12 @@ export default function Page() {
     useState("");
 
   // FETCH PRODUCTS
-
+const [page,
+    setPage] =
+    useState(1);
+const [totalPages,
+setTotalPages] =
+useState(1);
   const fetchProducts =
     async () => {
 
@@ -50,7 +56,7 @@ export default function Page() {
 
         const response =
           await api.get(
-            "/api/comman/products"
+            `/api/comman/products?page=${page}&limit=6`
           );
 
         const allProducts =
@@ -61,7 +67,9 @@ export default function Page() {
             : [];
 
         setProducts(allProducts);
-
+setTotalPages(
+response.data.totalPages
+);
         setFilteredProducts(
           allProducts
         );
@@ -181,7 +189,7 @@ export default function Page() {
 
     fetchProducts();
 
-  }, []);
+  }, [page]);
 
   return (
 
@@ -421,6 +429,16 @@ export default function Page() {
             )
           )}
           </div>
+
+          <Pagination
+
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
         </div>
 
       )}

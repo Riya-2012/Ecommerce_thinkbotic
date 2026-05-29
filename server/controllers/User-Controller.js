@@ -470,10 +470,17 @@ const safePayment = {
 const getOrdersByUser = async (req, res) => {
   try {
     const userId = req.userID;
-    const orders = await Order.find({ userId })
-      // .populate("address.id") // <-- Remove this line
-      .populate("items.productId");
+const page= Number(req.query.page)|| 1;
+const limit= Number(req.query.limit) || 3;
+const skip=(page-1)*limit;
 
+    const orders = await Order.find({ userId })
+  
+      .populate("items.productId")
+      .sort({createdAt:-1})
+      .skip(skip)
+      .limit(limit);
+const totalOrders = await Order.countDocuments({ userId });
     // Add fallback for each order
     const safeOrders = orders.map(order => {
       if (!order.payment) order.payment = {};
@@ -481,8 +488,22 @@ const getOrdersByUser = async (req, res) => {
       if (!order.payment.appliedCoupon) order.payment.appliedCoupon = null;
       return order;
     });
+const totalPages = Math.ceil( totalOrders / limit );
+safeOrders.totalPages =
+totalPages;
 
-    res.status(200).json(safeOrders);
+safeOrders.currentPage =
+page;
+
+res.status(200).json({
+
+data: safeOrders,
+
+totalPages,
+
+currentPage: page,
+});
+  
   } catch (error) {
     res.status(500).json({ error: "Failed to fetch orders" });
   }
@@ -551,8 +572,7 @@ const getMyProductRating = async (req, res) => {
     const { productId } = req.params;
     const userId = req.user._id;
 
-    const product = await ProductPage.findById(productId)
-    ;
+    const product = await ProductPage.findById(productId);
     if (!product) return res.status(404).json({ error: "Product not found" });
 
     const userReview = product.reviews.find(
@@ -573,7 +593,6 @@ const getMyReviews = async (req, res) => {
   try {
     const userId = req.user._id.toString();
     const products = await ProductPage.find({ "reviews.userId": userId });
-
     const reviews = [];
     products.forEach(product => {
       const userReview = product.reviews.find(r => r.userId?.toString() === userId);

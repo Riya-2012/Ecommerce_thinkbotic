@@ -20,13 +20,20 @@ import {
   FaTrash,
   FaPlus,
 } from "react-icons/fa";
+import Pagination from "@/app/components/Pagination";
 
 export default function BannerPage() {
 
   const [banners,
   setBanners] =
     useState([]);
+const [page,
+    setPage] =
+    useState(1);
 
+const [totalPages,
+setTotalPages] =
+useState(1);
   // FETCH
 
   const fetchBanners =
@@ -36,13 +43,14 @@ export default function BannerPage() {
 
         const res =
           await api.get(
-            "/api/admin/banner"
+          
+            `/api/admin/banner?page=${page}&limit=6`
           );
 
         setBanners(
           res.data.data || []
         );
-
+setTotalPages(res.data.totalPages);
       } catch (error) {
 
         console.log(error);
@@ -54,7 +62,7 @@ export default function BannerPage() {
 
     fetchBanners();
 
-  }, []);
+  }, [page]);
 
   // DELETE
 
@@ -222,7 +230,15 @@ export default function BannerPage() {
         )}
 
       </div>
+ <Pagination
 
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
     </div>
   );
 }

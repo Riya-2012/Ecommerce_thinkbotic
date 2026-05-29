@@ -1,5 +1,6 @@
 "use client";
 
+import Pagination from "@/app/components/Pagination";
 import { useAuth } from "@/app/context/AuthContext";
 import api, { BASE_URL } from "@/app/lib/axios";
 
@@ -7,6 +8,7 @@ import Image from "next/image";
 import Link from "next/link";
 
 import { useEffect, useState } from "react";
+
 
 export default function Page() {
 
@@ -20,7 +22,12 @@ export default function Page() {
   const [loading,
     setLoading] =
     useState(true);
-
+  const [page,
+    setPage] =
+    useState(1);
+const [totalPages,
+setTotalPages] =
+useState(1);
   useEffect(() => {
 
     const fetchOrders =
@@ -29,18 +36,23 @@ export default function Page() {
         try {
 
           const res =
-            await api.get(
-              "/api/user/orders"
-            );
+          await api.get(
 
-          const data =
-            res.data;
+`/api/user/orders?page=${page}&limit=2`
+);
 
+          const data = res.data.data;
+setTotalPages(
+res.data.totalPages
+);
           console.log(
             "Orders:",
             data
           );
-
+console.log(
+"totalPages",
+res.data.totalPages
+);
           if (
             Array.isArray(data)
           ) {
@@ -69,7 +81,7 @@ export default function Page() {
       fetchOrders();
     }
 
-  }, [user]);
+  }, [user,page]);
 
   if (loading) {
 
@@ -320,9 +332,12 @@ export default function Page() {
 
                   </Link>
 
+
                 </div>
+               
 
               </div>
+
 
             </div>
           );
@@ -357,6 +372,15 @@ export default function Page() {
         </div>
       )}
 
+               <Pagination
+
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
     </div>
   );
 }

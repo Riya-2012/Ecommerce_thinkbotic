@@ -12,9 +12,15 @@ import api, {
 
 import { MdEdit }
 from "react-icons/md";
+import Pagination from "@/app/components/Pagination";
 
 export default function Page() {
-
+const [page,
+    setPage] =
+    useState(1);
+const [totalPages,
+setTotalPages] =
+useState(1);
   const [products,
     setProducts] =
     useState([]);
@@ -32,17 +38,19 @@ export default function Page() {
 
         const res =
           await api.get(
-            "/api/admin/productpage"
+            `/api/admin/productpage?page=${page}&limit=6`
           );
 
         setProducts(
           Array.isArray(
-            res.data
+            res.data.data
           )
-            ? res.data
+            ? res.data.data
             : []
         );
-
+setTotalPages(
+res.data.totalPages
+);
       } catch (error) {
 
         console.log(error);
@@ -62,7 +70,7 @@ export default function Page() {
 
     fetchProducts();
 
-  }, []);
+  }, [page]);
 
   // STATUS
 
@@ -252,6 +260,15 @@ export default function Page() {
         )}
 
       </div>
+       <Pagination
+
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
 
     </div>
   );

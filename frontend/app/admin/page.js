@@ -79,10 +79,7 @@ export default function AdminDashboard() {
   ] = useState([]);
 
   const [lowStockProduct,setLowStockProduct]=useState([]);
-  const [
-    products,
-    setProducts,
-  ] = useState([]);
+  const [products,setProducts,] = useState([]);
 
   const [users, setUsers] = useState([]);
 
@@ -175,15 +172,15 @@ export default function AdminDashboard() {
 
     api
       .get(
-        `api/admin/orders/total-sale`
+        `/api/admin/orders/total-sale`
       )
-      .then((res) =>
-
+      .then((res) =>{ 
+        console.log( "Total Sale Response:", res.data );
         setTotalSale(
           res.data.totalSale || 0
         )
 
-      )
+  })
       .catch(() =>
 
         setTotalSale(0)
@@ -208,10 +205,7 @@ export default function AdminDashboard() {
     setUsersCount(
       usersData.length
     );
-      }
-
-       
-
+      } 
       )
       .catch(() =>
 

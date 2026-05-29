@@ -1,4 +1,5 @@
 "use client"
+import Pagination from "@/app/components/Pagination";
 import { useAuth } from "@/app/context/AuthContext";
 import api, { BASE_URL } from "@/app/lib/axios";
 import { useRouter } from "next/navigation";
@@ -10,15 +11,21 @@ const AdminOrders = () => {
   const [orders, setOrders] = useState([]);
 const {user}= useAuth();
   const router = useRouter();
+ const [page,
+    setPage] =
+    useState(1);
+
+const [totalPages,
+setTotalPages] =
+useState(1);
 
   useEffect(() => {
     const fetchOrders = async () => {
       try {
-        const res = await api.get(`api/admin/recentOrders`);
+        const res = await api.get(`api/admin/recentOrders?page=${page}&limit=4`);
     
-      const data =
-res.data.data;
-
+      const data = res.data.data;
+setTotalPages(res.data.totalPages);
 console.log(
 "recentOrders",
 data
@@ -39,9 +46,9 @@ Array.isArray(data)
       }
     };
     fetchOrders();
-  }, [user]);
+  }, [user,page]);
 
-  const handleRowClick = (orderId, productId) => {
+  const handleRowClick = (orderId, productId ) => {
     router.push(`/admin/setting/recentOrders/${orderId}`);
   };
 
@@ -221,7 +228,7 @@ Array.isArray(data)
 
                     <h3 className="text-lg font-bold text-[#0f172a]">
 
-                 {   item.productId?.name }
+                   {item.productId?.name }
 
                     </h3>
 
@@ -304,7 +311,15 @@ Array.isArray(data)
         </div>
 
       ))}
+<Pagination
 
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
     </div>
 
   )}

@@ -9,13 +9,21 @@ const fs = require("fs");
 // Generic function for fetching all records
 const getAll = (Model, modelName) => async (req, res, next) => {
   try {
+          const page= Number(req.query.page)|| 1;
+const limit= Number(req.query.limit) || 5;
+const skip=(page-1)*limit;
     if (!Model) {
       return res.status(500).json({ msg: `Model for ${modelName} not found` });
     }
-    const limit = parseInt(req.query.limit) || 0;
-    const data = await Model.find({}).limit(limit);
+  
+    const data = await Model.find({}).skip(skip)
+      .limit(limit).sort({ createdAt: -1 });
+      const totalDocuments =await Model.countDocuments();
+       const totalPages = Math.ceil( totalDocuments / limit );
     // Always return 200, even if no data
-    return res.status(200).json(data);
+    return res.status(200).json({ data,totalPages,
+      currentPage: page,
+      totalDocuments});
   } catch (error) {
     next(error);
   }
@@ -260,14 +268,16 @@ const getRecentConfirmedOrdersCount = async (req, res) => {
 
 const getTotalSale = async (req, res) => {
   try {
-    const orders = await Order.find({ "payment.status": "success" });
+    const orders = await Order.find({ "payment.status": "Success" });
     const totalSale = orders.reduce(
-      (sum, order) => sum + (order.payment.amount || 0),
-      0
-    );
-    res.json({ totalSale });
+      (sum, order) => sum + (order.orderSummary.total || 0),0);
+
+     res.json({ totalSale });
+
   } catch (error) {
+
     res.status(500).json({ error: "Failed to fetch total sale" });
+
   }
 };
 
@@ -309,8 +319,8 @@ const cartNotification = async (req, res) => {
     const carts = await Cart.find({
       "items.addedAt": { $lte: new Date(Date.now() -3 * 24 * 60 * 60 * 1000) }
     }).populate("userId", "email phone"); 
-
     res.json(carts);
+
   } catch (err) {
     res.status(500).json({ error: "Failed to fetch cart notifications" });
   }
@@ -319,6 +329,9 @@ getRecentOrders =
 async (req, res) => {
 
   try {
+   const page= Number(req.query.page)|| 1;
+   const limit= Number(req.query.limit) || 5;
+   const skip=(page-1)*limit;
 
     const orders =
       await Order.find()
@@ -337,13 +350,16 @@ async (req, res) => {
           createdAt: -1,
         })
 
-        .limit(10);
-
+        .skip(skip)
+      .limit(limit);
+ const totalDocuments =await Order.countDocuments();
+ const totalPages = Math.ceil( totalDocuments / limit );
     res.status(200).json({
-
       success: true,
-
       data: orders,
+      totalPages, 
+      currentPage: page,
+      totalDocuments
     });
 
   } catch (error) {

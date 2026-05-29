@@ -20,6 +20,7 @@ import {
 
 import { MdEdit }
 from "react-icons/md";
+import Pagination from "@/app/components/Pagination";
 
 export default function Page() {
 
@@ -31,6 +32,14 @@ export default function Page() {
     setLoading] =
     useState(true);
 
+    const [page,
+    setPage] =
+    useState(1);
+
+const [totalPages,
+setTotalPages] =
+useState(1);
+
   // FETCH
 
   const fetchCategories =
@@ -38,17 +47,18 @@ export default function Page() {
       try {
         const response =
           await api.get(
-            "api/admin/landingpage/categories"
+            `api/admin/landingpage/categories?page=${page}&limit=4`
           );
 
         setCategories(
           Array.isArray(
-            response.data
+            response.data.data
           )
-            ? response.data
+          
+            ? response.data.data
             : []
         );
-
+setTotalPages(response.data.totalPages);
       } catch (error) {
 
         console.log(error);
@@ -103,7 +113,7 @@ export default function Page() {
 
     fetchCategories();
 
-  }, []);
+  }, [page]);
 
   return (
 
@@ -266,7 +276,15 @@ export default function Page() {
         )}
 
       </div>
+   <Pagination
 
+
+                  currentPage={page}
+
+                  totalPages={totalPages}
+
+                  onPageChange={setPage}
+                />
     </div>
   );
 }
