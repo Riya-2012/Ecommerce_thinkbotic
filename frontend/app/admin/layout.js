@@ -11,11 +11,31 @@ export default function AdminLayout({ children }) {
   const router = useRouter();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   console.log("user", user)
-  useEffect(() => {
-    if (!loading && !user?.isAdmin) {
-      router.push("/");
-    }
-  }, [user, loading]);
+ 
+useEffect(() => {
+
+  if (loading) return;
+
+  // USER NOT LOGGED IN
+
+  if (!user) {
+
+    router.push("/");
+
+    return;
+  }
+
+  // NOT ADMIN
+
+  if (!user.isAdmin) {
+
+    router.push("/");
+
+  }
+
+}, [user, loading]);
+
+
 
   if (loading) {
     return (

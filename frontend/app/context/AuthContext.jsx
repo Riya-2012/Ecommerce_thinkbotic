@@ -38,7 +38,17 @@ export const AuthProvider = ({ children }) => {
           response.data
         );
 
-        setUser(response.data.userData);
+      
+setUser(
+
+response.data.userData ||
+
+response.data.user ||
+
+response.data
+);
+
+
 
       } catch (error) {
 

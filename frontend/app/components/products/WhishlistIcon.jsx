@@ -12,6 +12,8 @@ from "@/app/context/AuthContext";
 
 import { useWishlist }
 from "@/app/context/WhishlistContext";
+import toast from "react-hot-toast";
+import { useRouter } from "next/navigation";
 
 const WishlistIcon =
 ({
@@ -20,7 +22,7 @@ const WishlistIcon =
 
   const { user } =
     useAuth();
-
+const router= useRouter();
   const {
 
     wishlistItems,
@@ -53,6 +55,8 @@ const WishlistIcon =
         console.log(
           "User not authenticated"
         );
+      toast.error("pls signin first");
+      router.push("/signin");
 
         return;
       }

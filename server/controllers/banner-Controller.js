@@ -66,7 +66,7 @@ async (req, res) => {
 
   try {
    const page= Number(req.query.page)|| 1;
-const limit= Number(req.query.limit) || 5;
+const limit= Number(req.query.limit) || 20;
 const skip=(page-1)*limit;
     const banners =
       await Banner.find({
@@ -118,8 +118,7 @@ async (req, res) => {
     res.status(500).json({
 
       success: false,
-      message:
-        error.message,
+      message: error.message,
 
     });
   }

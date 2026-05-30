@@ -17,7 +17,7 @@ import api from "@/app/lib/axios";
 export default function SigninPage() {
 
   const router = useRouter();
-const { setUser } = useAuth();
+  const { setUser } = useAuth();
   const [formData, setFormData] = useState({
 
     phone: "",
@@ -143,8 +143,38 @@ const { setUser } = useAuth();
       console.log(response.data);
 
       toast.success("Login Successful");
-      setUser(response.data.userData);
-      router.push("/");
+
+    
+
+
+// SAVE USER
+
+const loggedUser =
+
+response.data.userData ||
+
+response.data.user ||
+
+response.data;
+
+setUser(loggedUser);
+
+// ADMIN REDIRECT
+
+if (loggedUser?.isAdmin) {
+
+  // window.location.href =
+  // "/admin";
+  router.push("/admin")
+
+} else {
+
+  // window.location.href =
+  // "/";
+  router.push("/")
+}
+
+
 
     } catch (error) {
 
@@ -157,7 +187,6 @@ const { setUser } = useAuth();
         error.message ||
 
         "OTP Verification Failed"
-
       );
 
     } finally {
@@ -252,45 +281,44 @@ const { setUser } = useAuth();
           >
 
             {/* PHONE */}
-        {/* PHONE */}
-{!showOtp && (
+            {/* PHONE */}
+            {!showOtp && (
 
-  <div className="relative">
+              <div className="relative">
 
-    <input
-      type="tel"
-      name="phone"
-      required
-      value={formData.phone}
-      onChange={handleChange}
-      placeholder=" "
-      className="peer w-full px-4 pt-5 pb-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/10 outline-none transition-all"
-    />
+                <input
+                  type="tel"
+                  name="phone"
+                  required
+                  value={formData.phone}
+                  onChange={handleChange}
+                  placeholder=" "
+                  className="peer w-full px-4 pt-5 pb-2 border border-gray-200 rounded-md bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-4 focus:ring-primary-blue/10 outline-none transition-all"
+                />
 
-    <label className="absolute left-4 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-sm">
+                <label className="absolute left-4 top-2 text-sm text-gray-500 transition-all peer-placeholder-shown:top-3 peer-placeholder-shown:text-base peer-focus:top-1 peer-focus:text-sm">
+                  Phone Number
+                </label>
 
-      Phone Number
+              </div>
 
-    </label>
+            )}
+            {showOtp && (
 
-  </div>
+              <p className="text-sm text-white text-center">
 
-)}
-{showOtp && (
+                OTP sent to +91 ******{formData.phone.slice(-4)}
 
-  <p className="text-sm text-white text-center">
+              </p>
 
-    OTP sent to +91 ******{formData.phone.slice(-4)}
-
-  </p>
-
-)}
+            )}
             {/* OTP */}
             {showOtp && (
 
               <div className="relative">
 
                 <input
+                  
                   type="text"
                   name="otp"
                   required
@@ -320,9 +348,8 @@ const { setUser } = useAuth();
               {loading
                 ? "Please Wait..."
                 : showOtp
-                ? "Verify OTP"
-                : "Send OTP"}
-
+                  ? "Verify OTP"
+                  : "Send OTP"}
             </button>
 
           </form>
@@ -341,9 +368,7 @@ const { setUser } = useAuth();
                 href="/signup"
                 className="text-primary-blue font-bold hover:text-primary-blue transition"
               >
-
                 Signup
-
               </Link>
 
             </p>

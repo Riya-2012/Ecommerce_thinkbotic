@@ -21,7 +21,7 @@ export default function CategoryProducts() {
 
   const apiUrl = process.env.NEXT_PUBLIC_API_URL;
 
-  /* 🔥 FETCH CATEGORIES */
+  /*  FETCH CATEGORIES */
   useEffect(() => {
 
     const fetchCategories = async () => {
@@ -81,7 +81,7 @@ export default function CategoryProducts() {
 
         </div>
 
-        {/* 🔥 LOADING */}
+        {/* LOADING */}
         {loading ? (
 
           <div className="flex justify-center py-20">

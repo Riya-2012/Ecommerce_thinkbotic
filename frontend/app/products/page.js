@@ -10,6 +10,7 @@ import {
   useSearchParams,
   useRouter
 } from "next/navigation";
+import Pagination from "../components/Pagination";
 
 const Ratings=[ 5,4,3,2,1];
 
@@ -42,7 +43,13 @@ useState(rating || 0);
 const[showBrands,setShowBrands]=useState(false);
 const[showRatings,setShowRatings]=useState(false);
 const [brands, setBrands] = useState([]);
+ const [page,
+    setPage] =
+    useState(1);
 
+const [totalPages,
+setTotalPages] =
+useState(1);
 useEffect(() => {
 
   if (category) {
@@ -141,14 +148,15 @@ selectedSubCategory
   selectedBrands,
   selectedRating,
   search,
-  selectedSubCategory
+  selectedSubCategory,
+  
 
 ]);
 
 // fetch
   const fetchProducts = async () => {
     try{
-      const res= await api.get("api/comman/products")
+      const res= await api.get(`api/comman/products?page=${page}&limit=8`)
       console.log(res.data.data);
 
       const formattedProducts =
@@ -182,6 +190,7 @@ selectedSubCategory
 
              
       setAllProducts(formattedProducts);
+      setTotalPages(res.data.totalPages);
  /*  DYNAMIC CATEGORIES */
 const categoriesSet = [
   "All",
@@ -253,7 +262,7 @@ setBrands(brandsSet);
 console.log("all products",allProducts);
   useEffect(() => {
     fetchProducts();
-  }, []);
+  }, [page]);
 
 
  let filteredProducts =
@@ -827,39 +836,96 @@ setSelectedSubCategory("");
 </div>
         {/* PRODUCTS*/}
      
- <div className="flex-1 px-4 lg:px-10 mt-8">
-          {sortedProducts.length > 0 ? (
-            <div className="grid  lg:grid-col-3 grid-cols-2 xl:grid-cols-4 gap-2 lg:gap-6">
-              {sortedProducts.map((item) => (
-                <ProductCard key={item.id}
-                {...item} />
-              ))}
-            </div>
-          ) : (
-            <div className="bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center min-h-[400px] border border-gray-100">
-              <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
-                <FaFilter className="text-gray-300 text-3xl" />
-              </div>
-              <h3 className="text-2xl font-bold text-[#0f172a] mb-3">No products found</h3>
-              <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">
-                We couldn't find any products matching your current filters. Try adjusting your category, price, or color selections.
-              </p>
-              <button 
-                onClick={() => {
-                  setSelectedCategory("All");
-                  setPriceRange(10000);
-                   setDiscountRange(0);
-                setSelectedBrands([]);
-                setSelectedRating(0);
-                setSelectedSubCategory("");
-                }}
-                className="bg-gradient-blue-red text-white px-8 py-3 rounded-full font-medium hover:scale-105 transition-transform shadow-md"
-              >
-                Clear Filters
-              </button>
-            </div>
-          )}
-        </div>
+
+<div className="flex-1 px-4 lg:px-10 mt-8">
+
+  {sortedProducts.length > 0 ? (
+
+    <>
+
+      {/* PRODUCTS GRID */}
+
+      <div className="grid lg:grid-cols-3 grid-cols-2 xl:grid-cols-4 gap-2 lg:gap-6">
+
+        {sortedProducts.map((item,index) => (
+
+          <ProductCard
+            key={index}
+            {...item}
+          />
+
+        ))}
+
+      </div>
+
+      {/* PAGINATION */}
+
+      <div className="mt-10 flex justify-center">
+
+        <Pagination
+
+          currentPage={page}
+
+          totalPages={totalPages}
+
+          onPageChange={setPage}
+        />
+
+      </div>
+
+    </>
+
+  ) : (
+
+    <div className="bg-white rounded-2xl p-10 text-center flex flex-col items-center justify-center min-h-[400px] border border-gray-100">
+
+      <div className="w-20 h-20 bg-gray-50 rounded-full flex items-center justify-center mb-6">
+
+        <FaFilter className="text-gray-300 text-3xl" />
+
+      </div>
+
+      <h3 className="text-2xl font-bold text-[#0f172a] mb-3">
+
+        No products found
+
+      </h3>
+
+      <p className="text-gray-500 max-w-sm mb-8 leading-relaxed">
+
+        We couldn't find any products matching your current filters.
+
+      </p>
+
+      <button
+
+        onClick={() => {
+
+          setSelectedCategory("All");
+
+          setPriceRange(10000);
+
+          setDiscountRange(0);
+
+          setSelectedBrands([]);
+
+          setSelectedRating(0);
+
+          setSelectedSubCategory("");
+        }}
+
+        className="bg-gradient-blue-red text-white px-8 py-3 rounded-full font-medium hover:scale-105 transition-transform shadow-md"
+      >
+
+        Clear Filters
+
+      </button>
+
+    </div>
+  )}
+
+</div>
+
    </div>
       </div>
       

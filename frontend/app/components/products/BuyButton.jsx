@@ -9,6 +9,8 @@ import {
 import {
   useCart
 } from "@/app/context/CartContext";
+import { useAuth } from "@/app/context/AuthContext";
+import toast from "react-hot-toast";
 
 
 
@@ -25,13 +27,25 @@ function BuyNow({
 
   const router =
     useRouter();
-
+const {user}= useAuth();
   const {
     addToCart
   } = useCart();
 
   const handleBuyNow =
     async (e) => {
+       if (!user) {
+
+        toast.error(
+          "Please login first"
+        );
+
+        router.push(
+          "/signin"
+        );
+
+        return;
+      }
 
       e.preventDefault();
 

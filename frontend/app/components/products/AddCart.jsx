@@ -42,7 +42,7 @@ function AddCart({
         );
 
         router.push(
-          "/login"
+          "/signin"
         );
 
         return;

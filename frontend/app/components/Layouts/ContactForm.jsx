@@ -12,7 +12,19 @@ function ContactModal() {
   const [loading, setLoading] = useState(false);
   const { user } = useAuth();
 
-  const [formData, SetFormData] = useState()
+
+const [formData, SetFormData] = useState({
+
+  name: "",
+
+  email: "",
+
+  phone: "",
+
+  description: "",
+});
+
+
 
   useEffect(() => {
 
@@ -53,7 +65,7 @@ function ContactModal() {
           user?.email || "",
 
         phone:
-          user?.phone || "",
+          user?.phone?.replace("+91", "") || "",
 
         description: "",
       });
@@ -70,132 +82,132 @@ function ContactModal() {
     })
   }
 
-const handleSubmit =
-async (e) => {
+  const handleSubmit =
+    async (e) => {
 
-  e.preventDefault();
+      e.preventDefault();
 
-  // NAME REGEX
+      // NAME REGEX
 
-  const NameRegex =
-/^[A-Za-z ]+$/;
+      const NameRegex =
+        /^[A-Za-z ]+$/;
 
-  if (
-!NameRegex.test(
-formData.name.trim()
-)
-  ) {
+      if (
+        !NameRegex.test(
+          formData.name.trim()
+        )
+      ) {
 
-    toast.error(
+        toast.error(
 
-"Name should contain only letters"
+          "Name should contain only letters"
 
-    );
+        );
 
-    return;
-  }
+        return;
+      }
 
-  // NAME LENGTH
+      // NAME LENGTH
 
-  if (
-formData.name
-.trim().length < 2
-  ) {
+      if (
+        formData.name
+          .trim().length < 2
+      ) {
 
-    toast.error(
+        toast.error(
 
-"Name must be at least 2 characters"
+          "Name must be at least 2 characters"
 
-    );
+        );
 
-    return;
-  }
+        return;
+      }
 
-  // EMAIL
+      // EMAIL
 
-  const emailRegex =
+      const emailRegex =
 
-/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
-  if (
-!emailRegex.test(
-formData.email
-)
-  ) {
+      if (
+        !emailRegex.test(
+          formData.email
+        )
+      ) {
 
-    toast.error(
-"Invalid email"
-);
+        toast.error(
+          "Invalid email"
+        );
 
-    return;
-  }
+        return;
+      }
 
-  // PHONE
+      // PHONE
 
-  const phoneRegex =
-/^[0-9]{10}$/;
+      const phoneRegex =
+        /^[0-9]{10}$/;
 
-  if (
-!phoneRegex.test(
-formData.phone
-)
-  ) {
+      if (
+        !phoneRegex.test(
+          formData.phone
+        )
+      ) {
 
-    toast.error(
-"Phone must be 10 digits"
-);
+        toast.error(
+          "Phone has min 10 digits"
+        );
 
-    return;
-  }
+        return;
+      }
 
-  // DESCRIPTION
+      // DESCRIPTION
 
-  if (
-formData.description
-.trim().length < 5
-  ) {
+      if (
+        formData.description
+          .trim().length < 5
+      ) {
 
-    toast.error(
-"Description too short"
-);
+        toast.error(
+          "Description too short"
+        );
 
-    return;
-  }
+        return;
+      }
 
-  try {
+      try {
 
-setLoading(true);
+        setLoading(true);
 
-    const res =
-await api.post(
+        const res =
+          await api.post(
 
-"/api/user/contact/create",
+            "/api/user/contact/create",
 
-formData
-    );
+            formData
+          );
 
-    toast.success(
+        toast.success(
 
-"Query submitted successfully"
+          "Query submitted successfully"
 
-    );
+        );
 
-  } catch (err) {
+      } catch (err) {
 
-console.log(err);
+        console.log(err);
 
-    toast.error(
+        toast.error(
 
-err.response?.data?.message ||
+          err.response?.data?.message ||
 
-"Something went wrong"
-    );
+          "Something went wrong"
+        );
 
-  } finally {
+      } finally {
 
-setLoading(false);
-  }
-};
+        setLoading(false);
+      }
+    };
 
 
 
@@ -240,7 +252,7 @@ setLoading(false);
                   type="text"
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2  focus:ring-primary-blue"
                   placeholder="Enter your name"
-                  name="name" value={formData.name}
+                  name="name" value={formData?.name}
                   onChange={handleChange}
                   required
                 />
@@ -252,7 +264,7 @@ setLoading(false);
                   type="email"
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2  focus:ring-primary-blue"
                   placeholder="Enter your email"
-                  name="email" value={formData.email}
+                  name="email" value={formData?.email}
                   onChange={handleChange}
                   required
                 />
@@ -264,7 +276,7 @@ setLoading(false);
                   type="text"
                   className="w-full mt-1 px-3 py-2 border rounded-lg focus:outline-none focus:ring-2  focus:ring-primary-blue"
                   placeholder="Enter phone number"
-                  name="phone" value={formData.phone}
+                  name="phone" value={formData?.phone}
                   onChange={handleChange}
                   required
                 />
@@ -275,7 +287,7 @@ setLoading(false);
                   rows={4}
                   placeholder="Enter description"
                   className="w-full mt-1 px-3 py-2 border rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-primary-blue"
-                  name="description" value={formData.description}
+                  name="description" value={formData?.description}
                   onChange={handleChange}
                   required
                 ></textarea>

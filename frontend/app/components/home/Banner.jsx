@@ -194,7 +194,8 @@ key={mainBanner.length}
 
                     {/* GLOW */}
 
-                    <div className="absolute right-[-80px] bottom-[-80px] w-[300px] h-[300px] bg-primary-blue/10 rounded-full blur-3xl"></div>
+                    <div className="absolute right-[-80px] bottom-[-80px] w-[300px] h-[300px] bg-primary-blue/10 rounded-full blur-3xl">
+                    </div>
 
                   </div>
 

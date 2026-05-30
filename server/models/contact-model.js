@@ -63,7 +63,7 @@ new mongoose.Schema({
 
       /^[0-9]{10}$/,
 
-      "Phone number must be 10 digits",
+      "Phone number must be 12 digits",
     ],
   },
 
