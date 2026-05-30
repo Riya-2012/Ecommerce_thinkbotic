@@ -1,77 +1,463 @@
-const mongoose = require("mongoose");
 
-const productPageSchema = new mongoose.Schema({
-  name: { type: String, default: "" },
-  Brand: { type: String, default: "" },
-  img: { type: String, default: "" },
-  images: [
-  {
-    imageColor: { type: String, default: "" },
-    imageSet: [{ type: String, default: "" }]
-  }
-],
-  descriptions: { type: String, default: "" },
-  category: { type: String, default: "" },
-  subCategory: { type: String, default: "" },
-  price: { type: Number, default: "" },
-  priceAlert: { type: String, default: "" },
-  oldPrice: { type: Number, default: "" },
-  discount: { type: Number, default: "" },
-  gst: { type: Number, default: "" },
-  stock: { type: Number, default: 0 },
-  stockStatus: {
+const mongoose =
+require("mongoose");
+
+const productPageSchema =
+new mongoose.Schema({
+
+  name: {
+
     type: String,
-    enum: ["in-stock", "out-of-stock", "few-left"],
-    default: "in-stock"
+
+    required: [
+      true,
+      "Product name is required",
+    ],
+
+    trim: true,
+
+    minlength: [
+      2,
+      "Product name too short",
+    ],
+
+    maxlength: [
+      200,
+      "Product name too long",
+    ],
   },
 
-  rating: { type: Number, default: 0 },
-  ratingCount: { type: Number, default: 0 },
-  ratingTotal: { type: Number, default: 0 },
-  productDescription: { type: String, default: "" },
-  specifications: [
-    {
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  warranty: [
-    {
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  reviews: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      rating: { type: Number, default: 0 },
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  quesAns: [
-    {
-      userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  otherinfo: [
-    {
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  offers: [
-    {
-      key: { type: String, default: "" },
-      value: { type: String, default: "" },
-    }
-  ],
-  otherinfoText: { type: String, default: "" },
-  metaTitle: { type: String, default: "" },
-  metaDescription: { type: String, default: "" },
-  metaKeywords: { type: String, default: "" },
-}, { timestamps: true });
+  Brand: {
 
-module.exports = mongoose.model("ProductPage", productPageSchema);
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  img: {
+
+    type: String,
+
+    required: [
+      true,
+      "Main image is required",
+    ],
+
+    trim: true,
+  },
+
+  images: [
+
+    {
+
+      imageColor: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      imageSet: [
+
+        {
+          type: String,
+
+          trim: true,
+        },
+      ],
+    },
+  ],
+
+  descriptions: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  category: {
+
+    type: String,
+
+    required: [
+      true,
+      "Category is required",
+    ],
+
+    trim: true,
+  },
+
+  subCategory: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  price: {
+
+    type: Number,
+
+    required: [
+      true,
+      "Price is required",
+    ],
+
+    min: [
+      0,
+      "Price cannot be negative",
+    ],
+  },
+
+  priceAlert: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  oldPrice: {
+
+    type: Number,
+
+    min: [
+      0,
+      "Old price cannot be negative",
+    ],
+
+    default: 0,
+  },
+
+  discount: {
+
+    type: Number,
+
+    min: [
+      0,
+      "Discount cannot be negative",
+    ],
+
+    max: [
+      100,
+      "Discount cannot exceed 100%",
+    ],
+
+    default: 0,
+  },
+
+  gst: {
+
+    type: Number,
+
+    min: [
+      0,
+      "GST cannot be negative",
+    ],
+
+    max: [
+      100,
+      "GST cannot exceed 100%",
+    ],
+
+    default: 0,
+  },
+
+  stock: {
+
+    type: Number,
+
+    min: [
+      0,
+      "Stock cannot be negative",
+    ],
+
+    default: 0,
+  },
+
+  stockStatus: {
+
+    type: String,
+
+    enum: [
+
+      "in-stock",
+
+      "out-of-stock",
+
+      "few-left",
+    ],
+
+    default: "in-stock",
+  },
+
+  rating: {
+
+    type: Number,
+
+    min: 0,
+
+    max: 5,
+
+    default: 0,
+  },
+
+  ratingCount: {
+
+    type: Number,
+
+    min: 0,
+
+    default: 0,
+  },
+
+  ratingTotal: {
+
+    type: Number,
+
+    min: 0,
+
+    default: 0,
+  },
+
+  productDescription: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  specifications: [
+
+    {
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  warranty: [
+
+    {
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  reviews: [
+
+    {
+
+      userId: {
+
+        type:
+mongoose.Schema.Types.ObjectId,
+
+        ref: "User",
+      },
+
+      rating: {
+
+        type: Number,
+
+        min: 1,
+
+        max: 5,
+
+        required: true,
+      },
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  quesAns: [
+
+    {
+
+      userId: {
+
+        type:
+mongoose.Schema.Types.ObjectId,
+
+        ref: "User",
+      },
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  otherinfo: [
+
+    {
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  offers: [
+
+    {
+
+      key: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+
+      value: {
+
+        type: String,
+
+        trim: true,
+
+        default: "",
+      },
+    },
+  ],
+
+  otherinfoText: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+  metaTitle: {
+
+    type: String,
+
+    trim: true,
+
+    maxlength: 60,
+
+    default: "",
+  },
+
+  metaDescription: {
+
+    type: String,
+
+    trim: true,
+
+    maxlength: 160,
+
+    default: "",
+  },
+
+  metaKeywords: {
+
+    type: String,
+
+    trim: true,
+
+    default: "",
+  },
+
+},
+
+{
+  timestamps: true,
+});
+
+module.exports =
+mongoose.model(
+  "ProductPage",
+  productPageSchema
+);
+

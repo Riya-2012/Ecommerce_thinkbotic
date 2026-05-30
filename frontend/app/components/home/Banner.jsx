@@ -31,7 +31,7 @@ export default function Banner() {
   useEffect(() => {
     const fetchBanner = async () => {
       try {
-        const res = await api.get("/api/admin/banner");
+        const res = await api.get(`/api/admin/banner`);
         console.log("banners", res.data.data);
         setBanners(res.data.data || [])
       }

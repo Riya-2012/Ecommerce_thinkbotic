@@ -90,93 +90,408 @@ const transporter = nodemailer.createTransport({
   maxMessages: 100,
 });
 
-const createInquiry = async (req, res) => {
-  const { name, email, mobile, altMobile, quantity, description, isBulkOrder, isCustomization } = req.body;
 
-  if (!name || !email || !mobile || !quantity) {
-    return res
-      .status(400)
-      .json({ success: false, message: "Required fields are missing." });
-  }
+const createInquiry =
+async (req, res) => {
 
   try {
-    // Boolean conversion for checkboxes
-    const newInquiry = new ProductInquiry({
+
+    let {
+
       name,
+
       email,
+
       mobile,
+
       altMobile,
+
       quantity,
+
       description,
-      isBulkOrder: isBulkOrder === true || isBulkOrder === "true",
-      isCustomization: isCustomization === true || isCustomization === "true",
+
+      isBulkOrder,
+
+      isCustomization,
+
+    } = req.body;
+
+    // TRIM VALUES
+
+    name =
+name?.trim();
+
+    email =
+email?.trim().toLowerCase();
+
+    mobile =
+mobile?.trim();
+
+    altMobile =
+altMobile?.trim();
+
+    description =
+description?.trim();
+
+    // REQUIRED FIELDS
+
+    if (
+
+!name ||
+
+!email ||
+
+!mobile ||
+
+!quantity
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Required fields are missing.",
+      });
+    }
+
+    // NAME VALIDATION
+
+    const nameRegex =
+/^[A-Za-z ]+$/;
+
+    if (
+!nameRegex.test(name)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Name should contain only letters",
+      });
+    }
+
+    if (
+name.length < 2
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Name must be at least 2 characters",
+      });
+    }
+
+    // EMAIL VALIDATION
+
+    const emailRegex =
+
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+!emailRegex.test(email)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Invalid email address",
+      });
+    }
+
+    // MOBILE VALIDATION
+
+    const mobileRegex =
+/^[0-9]{10}$/;
+
+    if (
+!mobileRegex.test(mobile)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Mobile number must be 10 digits",
+      });
+    }
+
+    // ALT MOBILE VALIDATION
+
+    if (
+
+altMobile &&
+
+!mobileRegex.test(
+altMobile
+)
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Alternate mobile must be 10 digits",
+      });
+    }
+
+    // QUANTITY VALIDATION
+
+    quantity =
+Number(quantity);
+
+    if (
+
+isNaN(quantity) ||
+
+quantity < 1
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Quantity must be at least 1",
+      });
+    }
+
+    // DESCRIPTION VALIDATION
+
+    if (
+
+description &&
+
+description.length > 1000
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Description too long",
+      });
+    }
+
+    // CREATE INQUIRY
+
+    const newInquiry =
+
+new ProductInquiry({
+
+      name,
+
+      email,
+
+      mobile,
+
+      altMobile,
+
+      quantity,
+
+      description,
+
+      isBulkOrder:
+
+isBulkOrder === true ||
+
+isBulkOrder === "true",
+
+      isCustomization:
+
+isCustomization === true ||
+
+isCustomization === "true",
     });
+
     await newInquiry.save();
 
-    const { enquiryNumber } = newInquiry;
+    const {
+      enquiryNumber
+    } = newInquiry;
 
-    // 3️⃣ Prepare emails
+    // ADMIN EMAIL
+
     const mailOptionsToAdmin = {
-      from: process.env.EMAIL_USER,
-      to: process.env.RECEIVER_EMAIL,
-      subject: `New Product Inquiry #${enquiryNumber}`,
+
+      from:
+process.env.EMAIL_USER,
+
+      to:
+process.env.RECEIVER_EMAIL,
+
+      subject:
+
+`New Product Inquiry #${enquiryNumber}`,
+
       text: `
-         Enquiry No: ${enquiryNumber}
-         Name:       ${name}
-         Email:      ${email}
-         Mobile:     ${mobile}
-         Alt Mobile: ${altMobile || "-"}
-         Quantity:   ${quantity}
-         Description:${description || "-"}
+
+Enquiry No: ${enquiryNumber}
+
+Name: ${name}
+
+Email: ${email}
+
+Mobile: ${mobile}
+
+Alt Mobile: ${altMobile || "-"}
+
+Quantity: ${quantity}
+
+Description: ${description || "-"}
+
       `,
     };
+
+    // USER EMAIL
 
     const mailOptionsToUser = {
-      from: process.env.EMAIL_USER,
-      to: email,
-      subject: `Your Inquiry #${enquiryNumber} Received`,
-      text: `Dear ${name},
 
-            Thank you for your inquiry (No. ${enquiryNumber}). Our team will reach out to you soon.
+      from:
+process.env.EMAIL_USER,
 
-          Best Regards,
-          Support Team
+      to:
+email,
+
+      subject:
+
+`Your Inquiry #${enquiryNumber} Received`,
+
+      text: `
+
+Dear ${name},
+
+Thank you for your inquiry (No. ${enquiryNumber}).
+
+Our team will contact you soon.
+
+Best Regards,
+Support Team
+
       `,
     };
 
-    // 4️⃣ Send admin email
-    transporter.sendMail(mailOptionsToAdmin)
-      .then(info => console.log("Admin mail sent:", info.response))
-      .catch(err => console.error("Admin email error:", err));
+    // SEND ADMIN EMAIL
 
-    // 5️⃣ Send user email
-    transporter.sendMail(mailOptionsToUser)
+    transporter
+.sendMail(mailOptionsToAdmin)
+
+      .then(info =>
+
+console.log(
+"Admin mail sent:",
+info.response
+)
+
+      )
+
+      .catch(err =>
+
+console.error(
+"Admin email error:",
+err
+)
+
+      );
+
+    // SEND USER EMAIL
+
+    transporter
+.sendMail(mailOptionsToUser)
+
       .then(info => {
-        console.log("User mail sent:", info.response);
-        // 6️⃣ Send final response once both mails have at least been queued
+
+console.log(
+"User mail sent:",
+info.response
+);
+
         return res.status(201).json({
-          success: true,
+
+success: true,
+
           enquiryNumber,
-          message: "Inquiry submitted and confirmation email sent.",
+
+message:
+
+"Inquiry submitted successfully.",
         });
       })
+
       .catch(err => {
-        console.error("User email error:", err);
+
+console.error(
+"User email error:",
+err
+);
+
         return res.status(201).json({
-          success: true,
+
+success: true,
+
           enquiryNumber,
-          message:
-            "Inquiry saved and admin notified, but confirmation email to user failed.",
+
+message:
+
+"Inquiry saved but user email failed.",
         });
       });
 
   } catch (err) {
-    console.error("Inquiry submission failed:", err);
-    return res
-      .status(500)
-      .json({ success: false, message: "Failed to submit inquiry." });
+
+console.error(
+"Inquiry submission failed:",
+err
+);
+
+    // MONGOOSE VALIDATION
+
+    if (
+err.name ===
+"ValidationError"
+    ) {
+
+      const errors =
+
+Object.values(
+err.errors
+).map(
+
+(error) => error.message
+);
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+errors[0],
+      });
+    }
+
+    return res.status(500).json({
+
+success: false,
+
+message:
+"Failed to submit inquiry.",
+    });
   }
 };
+
 
 
 const getProductCards = async (req, res) => {

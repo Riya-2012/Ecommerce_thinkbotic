@@ -491,7 +491,7 @@ selectedColorIdx
 
             {/* BULK ORDER */}
             <button className="group relative overflow-hidden shadow-sm bg-blue-50 hover:bg-primary-blue rounded-md  p-5 transition-all duration-300 text-left" onClick={() => {
-              router.push("/productInquiry?type=bulk")
+              router.push(`/productInquiry?type=bulk&productName=${encodeURIComponent(product.name)}&category=${encodeURIComponent(product.category)}`)
             }} >
 
               <div className="relative z-10">
@@ -511,7 +511,7 @@ selectedColorIdx
 
             {/* CUSTOM ORDER */}
 
-            <button className="group relative overflow-hidden shadow-sm  bg-red-50 hover:bg-primary-red rounded-2xl p-5 transition-all duration-300 text-left" onClick={() => { router.push("/productInquiry?type=custom") }}>
+            <button className="group relative overflow-hidden shadow-sm  bg-red-50 hover:bg-primary-red rounded-2xl p-5 transition-all duration-300 text-left" onClick={() => { router.push(`/productInquiry?type=custom&productName=${encodeURIComponent(product.name)}&category=${encodeURIComponent(product.category)}`) }}>
 
               <div className="relative z-10">
                 <h3 className="font-bold text-primary-red group-hover:text-white text-lg transition">

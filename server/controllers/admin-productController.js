@@ -136,151 +136,182 @@ const getProductPageById = async (req, res, next) => {
     }
 };
 
+
 const createProductPage = async (req, res, next) => {
-    try {
-        const newData = {
-            name: req.body.name,
-            Brand: req.body.Brand,
-            priceAlert: req.body.priceAlert,
-            descriptions: req.body.descriptions,
-            category: req.body.category,
-            subCategory: req.body.subCategory,
-            price: req.body.price,
-            oldPrice: req.body.oldPrice,
-            discount: req.body.discount,
-            gst: req.body.gst,
-            stock: req.body.stock !== undefined ? Number(req.body.stock) : 50,
-            stockStatus:
-                (req.body.stock !== undefined
-                    ? Number(req.body.stock) === 0
-                        ? "out-of-stock"
-                        : Number(req.body.stock) < 5
-                            ? "few-left"
-                            : "in-stock"
-                    : "in-stock"),
-            rating: req.body.rating,
-            metaTitle: req.body.metaTitle,
-            metaDescription: req.body.metaDescription,
-            metaKeywords: req.body.metaKeywords,
-            productDescription: req.body.productDescription || "",
-            specifications: JSON.parse(req.body.specifications || '[]'),
-            warranty: JSON.parse(req.body.warranty || '[]'),
-            quesAns: JSON.parse(req.body.quesAns || '[]'),
-            otherinfo: JSON.parse(req.body.otherinfo || '[]'),
-            offers: JSON.parse(req.body.offers || '[]'),
-            otherinfoText: req.body.otherinfoText || "",
-        };
+  try {
 
-        // Main image
-        if (req.files && req.files.img && req.files.img[0]) {
-            newData.img = `uploads/${req.files.img[0].filename}`;
-        } else if (req.body.imgPath && !req.files?.img) {
-            newData.img = req.body.imgPath;
-        }
+    // ── TRIM STRINGS ──────────────────────────────────────────────────────
+    const name              = req.body.name?.trim();
+    const Brand             = req.body.Brand?.trim();
+    const descriptions      = req.body.descriptions?.trim();
+    const category          = req.body.category?.trim();
+    const subCategory       = req.body.subCategory?.trim();
+    const metaTitle         = req.body.metaTitle?.trim();
+    const metaDescription   = req.body.metaDescription?.trim();
+    const metaKeywords      = req.body.metaKeywords?.trim();
 
-        // Color-wise images
-        let images = [];
-        // colorNames: ["Red", "Blue"]
-        // colorImages: [file, file, file, ...] (order must match)
-        if (req.body.colorNames && req.files && req.files.colorImages) {
-            const colorNames = Array.isArray(req.body.colorNames)
-                ? req.body.colorNames
-                : [req.body.colorNames];
-            const colorImages = req.files.colorImages;
+    // ── SAFE NUMBER CONVERSION ────────────────────────────────────────────
+    // Use || 0 so missing / empty-string values become 0, never NaN
+    const price    = req.body.price    !== undefined && req.body.price    !== "" ? Number(req.body.price)    : undefined;
+    const oldPrice = req.body.oldPrice !== undefined && req.body.oldPrice !== "" ? Number(req.body.oldPrice) : 0;
+    const discount = req.body.discount !== undefined && req.body.discount !== "" ? Number(req.body.discount) : 0;
+    const gst      = req.body.gst      !== undefined && req.body.gst      !== "" ? Number(req.body.gst)      : 0;
+    const stock    = req.body.stock    !== undefined && req.body.stock    !== "" ? Number(req.body.stock)    : 50;
+    // rating is set by users via reviews — never trust a value from the admin form
+    // default to 0; schema has default:0 so we can simply omit it too
+    const rating   = 0;
 
-            let colorImageCounts = req.body.colorImageCounts
-                ? JSON.parse(req.body.colorImageCounts)
-                : Array(colorNames.length).fill(1);
-
-            // Prepare existing images grouped by color
-            let existingImagesMap = {};
-            if (req.body.existingColorImages) {
-                const flat = Array.isArray(req.body.existingColorImages)
-                    ? req.body.existingColorImages
-                    : [req.body.existingColorImages];
-                flat.forEach(item => {
-                    const obj = typeof item === "string" ? JSON.parse(item) : item;
-                    if (!obj.color || !obj.image) return;
-                    if (!existingImagesMap[obj.color]) existingImagesMap[obj.color] = [];
-                    existingImagesMap[obj.color].push(obj.image);
-                });
-            }
-
-            // Group new images by color using colorImageCounts
-            let imgIdx = 0;
-            colorNames.forEach((color, i) => {
-                const count = Number(colorImageCounts[i]) || 0;
-                const imageSet = [];
-
-                // Add existing images for this color
-                if (existingImagesMap[color]) {
-                    imageSet.push(...existingImagesMap[color]);
-                }
-
-                // Add new uploaded images for this color (slice instead of loop)
-                const newImagesForColor = colorImages.slice(imgIdx, imgIdx + count);
-                newImagesForColor.forEach(file => {
-                    imageSet.push(`uploads/${file.filename}`);
-                });
-                imgIdx += count;
-
-                images.push({
-                    imageColor: color,
-                    imageSet
-                });
-            });
-        }
-        else if (req.body.existingColorImages && req.body.colorNames) {
-            // Only existing images, no new uploads
-            const colorNames = Array.isArray(req.body.colorNames)
-                ? req.body.colorNames
-                : [req.body.colorNames];
-            let flat = Array.isArray(req.body.existingColorImages)
-                ? req.body.existingColorImages
-                : [req.body.existingColorImages];
-            let existingImagesMap = {};
-            flat.forEach(item => {
-                const obj = typeof item === "string" ? JSON.parse(item) : item;
-                if (!obj.color || !obj.image) return;
-                if (!existingImagesMap[obj.color]) existingImagesMap[obj.color] = [];
-                existingImagesMap[obj.color].push(obj.image);
-            });
-            images = colorNames.map(color => ({
-                imageColor: color,
-                imageSet: existingImagesMap[color] || []
-            }));
-        }
-        else if (req.body.images) {
-            if (typeof req.body.images === "string") {
-                try {
-                    images = JSON.parse(req.body.images);
-                } catch {
-                    images = [];
-                }
-            } else if (Array.isArray(req.body.images)) {
-                images = req.body.images;
-            }
-        }
-
-        newData.images = images;
-
-        // Save product
-        const createdData = new ProductPage(newData);
-        await createdData.save();
-
-        return res.status(201).json({
-            msg: "Product page created successfully",
-            data: createdData
-        });
-
-    } catch (error) {
-        console.error("Error creating product page:", error);
-        return res.status(500).json({
-            msg: "Error creating product page",
-            error: error.message
-        });
+    // ── REQUIRED VALIDATION ───────────────────────────────────────────────
+    if (!name || !category || price === undefined) {
+      return res.status(400).json({
+        success: false,
+        message: "Name, category and price are required",
+      });
     }
+
+    // NaN guard — catches any edge-case bad numeric input
+    if (isNaN(price) || isNaN(oldPrice) || isNaN(discount) || isNaN(gst) || isNaN(stock)) {
+      return res.status(400).json({
+        success: false,
+        message: "Invalid numeric value in price, oldPrice, discount, GST, or stock",
+      });
+    }
+
+    if (name.length < 2) {
+      return res.status(400).json({ success: false, message: "Product name too short" });
+    }
+    if (price < 0) {
+      return res.status(400).json({ success: false, message: "Price cannot be negative" });
+    }
+    if (oldPrice < 0) {
+      return res.status(400).json({ success: false, message: "Old price cannot be negative" });
+    }
+    if (discount < 0 || discount > 100) {
+      return res.status(400).json({ success: false, message: "Discount must be between 0 and 100" });
+    }
+    if (gst < 0 || gst > 100) {
+      return res.status(400).json({ success: false, message: "GST must be between 0 and 100" });
+    }
+    if (stock < 0) {
+      return res.status(400).json({ success: false, message: "Stock cannot be negative" });
+    }
+
+    // ── MAIN IMAGE ────────────────────────────────────────────────────────
+    if (!req.files?.img && !req.body.imgPath) {
+      return res.status(400).json({ success: false, message: "Main image is required" });
+    }
+
+    // ── PREPARE DATA ──────────────────────────────────────────────────────
+    const newData = {
+      name,
+      Brand,
+      descriptions,
+      category,
+      subCategory,
+      price,
+      oldPrice,
+      discount,
+      gst,
+      stock,
+      rating,                          // always 0 from admin; updated by user reviews
+      metaTitle,
+      metaDescription,
+      metaKeywords,
+      priceAlert:         req.body.priceAlert || "",
+      stockStatus:        stock === 0 ? "out-of-stock" : stock < 5 ? "few-left" : "in-stock",
+      productDescription: req.body.productDescription || "",
+      specifications:     JSON.parse(req.body.specifications || "[]"),
+      warranty:           JSON.parse(req.body.warranty      || "[]"),
+      otherinfo:          JSON.parse(req.body.otherinfo      || "[]"),
+      offers:             JSON.parse(req.body.offers         || "[]"),
+      otherinfoText:      req.body.otherinfoText || "",
+      // reviews and quesAns are managed by users — never set from admin form
+      reviews:  [],
+      quesAns:  [],
+    };
+
+    // ── MAIN IMAGE PATH ───────────────────────────────────────────────────
+    if (req.files?.img?.[0]) {
+      newData.img = `uploads/${req.files.img[0].filename}`;
+    } else if (req.body.imgPath) {
+      newData.img = req.body.imgPath;
+    }
+
+    // ── COLOR IMAGES ──────────────────────────────────────────────────────
+    let images = [];
+
+    if (req.body.colorNames && req.files?.colorImages) {
+      const colorNames = Array.isArray(req.body.colorNames)
+        ? req.body.colorNames
+        : [req.body.colorNames];
+
+      const colorImages = req.files.colorImages;
+
+      const colorImageCounts = req.body.colorImageCounts
+        ? JSON.parse(req.body.colorImageCounts)
+        : Array(colorNames.length).fill(1);
+
+      let existingImagesMap = {};
+      if (req.body.existingColorImages) {
+        const flat = Array.isArray(req.body.existingColorImages)
+          ? req.body.existingColorImages
+          : [req.body.existingColorImages];
+
+        flat.forEach((item) => {
+          const obj = typeof item === "string" ? JSON.parse(item) : item;
+          if (!obj.color || !obj.image) return;
+          if (!existingImagesMap[obj.color]) existingImagesMap[obj.color] = [];
+          existingImagesMap[obj.color].push(obj.image);
+        });
+      }
+
+      let imgIdx = 0;
+      colorNames.forEach((color, i) => {
+        const count    = Number(colorImageCounts[i]) || 0;
+        const imageSet = [];
+
+        if (existingImagesMap[color]) {
+          imageSet.push(...existingImagesMap[color]);
+        }
+
+        colorImages.slice(imgIdx, imgIdx + count).forEach((file) => {
+          imageSet.push(`uploads/${file.filename}`);
+        });
+
+        imgIdx += count;
+        images.push({ imageColor: color, imageSet });
+      });
+    }
+
+    newData.images = images;
+
+    // ── CREATE ────────────────────────────────────────────────────────────
+    const createdData = new ProductPage(newData);
+    await createdData.save();
+
+    return res.status(201).json({
+      success: true,
+      message: "Product page created successfully",
+      data:    createdData,
+    });
+
+  } catch (error) {
+    console.error("Error creating product page:", error);
+
+    if (error.name === "ValidationError") {
+      const errors = Object.values(error.errors).map((e) => e.message);
+      return res.status(400).json({ success: false, message: errors[0] });
+    }
+
+    return res.status(500).json({
+      success: false,
+      message: "Error creating product page",
+      error:   error.message,
+    });
+  }
 };
+
+
 
 
 const updateProductPageById = async (req, res, next) => {

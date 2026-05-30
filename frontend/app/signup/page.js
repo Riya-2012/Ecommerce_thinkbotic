@@ -1,7 +1,6 @@
 "use client";
 
 import React, { useState } from "react";
-import Image from "next/image";
 import Link from "next/link";
 
 import toast from "react-hot-toast";
@@ -10,6 +9,7 @@ import api from "@/app/lib/axios";
 
 import { useRouter } from "next/navigation";
 import { DotLottieReact } from '@lottiefiles/dotlottie-react';
+import { useAuth } from "../context/AuthContext";
 export default function SignupPage() {
   const [formData, setFormData] = useState({
     username: "",
@@ -18,75 +18,230 @@ export default function SignupPage() {
     gender: "",
     email: "",
     phone: "",
-   
-  });
 
-const router = useRouter();
+  });
+const {setUser}= useAuth();
+  const router = useRouter();
   const [loading, setLoading] = useState(false);
 
-  
-  const handleChange = (e) => {
-    setFormData({
-      ...formData,
-      [e.target.name]: e.target.value,
-    });
-  };
+const handleChange =
+(e) => {
 
+  const {
+name,
+value
+} = e.target;
 
- const handleSubmit = async (e) => {
+  let updatedValue =
+value;
 
-  e.preventDefault();
+  // REMOVE STARTING SPACES
 
-  setLoading(true);
+  updatedValue =
+updatedValue.replace(
+/^\s+/,
+""
+);
 
-  try {
+  // ONLY LETTERS FOR NAMES
 
-    const response = await api.post(
+  if (
+name === "firstname" ||
 
-      "/api/auth/signUp",
+name === "lastname"
+  ) {
 
-      formData
-
-    );
-
-    console.log(response.data);
-
-    toast.success("Account created successfully");
-
-   
-    setFormData({
-
-      username: "",
-      firstname: "",
-      lastname: "",
-      gender: "",
-      email: "",
-      phone: "",
-   
-
-    });
-
-  
-    router.push("/");
-
-  } catch (error) {
-
-    console.log(error);
-
-    toast.error(
-
-      error.response?.data?.msg ||
-
-      "Something went wrong"
-
-    );
-
-  } finally {
-
-    setLoading(false);
-
+    updatedValue =
+updatedValue.replace(
+/[^A-Za-z ]/g,
+""
+);
   }
+
+  // ONLY NUMBERS FOR PHONE
+
+  if (name === "phone") {
+
+    updatedValue =
+updatedValue.replace(
+/[^0-9]/g,
+""
+);
+
+    // MAX 10 DIGITS
+
+    updatedValue =
+updatedValue.slice(
+0,
+10
+);
+  }
+
+  setFormData({
+
+    ...formData,
+
+    [name]:
+updatedValue,
+  });
 };
+
+
+
+  const handleSubmit = async (e) => {
+
+    e.preventDefault();
+const nameRegex =
+/^[A-Za-z ]+$/;
+
+const usernameRegex =
+/^[A-Za-z0-9_]+$/;
+
+const emailRegex =
+
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+const phoneRegex =
+/^[0-9]{10}$/;
+
+// USERNAME
+
+if (
+!usernameRegex.test(
+formData.username.trim()
+)
+) {
+
+  toast.error(
+
+"Username can only contain letters, numbers and underscore"
+
+  );
+
+  return;
+}
+
+// FIRST NAME
+
+if (
+!nameRegex.test(
+formData.firstname.trim()
+)
+) {
+
+  toast.error(
+"Invalid first name"
+);
+
+  return;
+}
+
+// LAST NAME
+
+if (
+!nameRegex.test(
+formData.lastname.trim()
+)
+) {
+
+  toast.error(
+"Invalid last name"
+);
+
+  return;
+}
+
+// EMAIL
+
+if (
+!emailRegex.test(
+formData.email.trim()
+)
+) {
+
+  toast.error(
+"Invalid email"
+);
+
+  return;
+}
+
+// PHONE
+
+if (
+!phoneRegex.test(
+formData.phone
+)
+) {
+
+  toast.error(
+"Phone must be 10 digits"
+);
+
+  return;
+}
+
+// GENDER
+
+if (!formData.gender) {
+
+  toast.error(
+"Please select gender"
+);
+
+  return;
+}
+
+
+    setLoading(true);
+
+    try {
+
+      const response = await api.post(
+
+        "/api/auth/signUp",
+
+        formData
+
+      );
+
+      console.log(response.data);
+
+      toast.success("Account created successfully");
+
+localStorage.setItem( "token", response.data.token );
+setUser( response.data.user );
+      setFormData({
+
+        username: "",
+        firstname: "",
+        lastname: "",
+        gender: "",
+        email: "",
+        phone: "",
+      });
+
+
+      router.push("/");
+
+    } catch (error) {
+
+      console.log(error);
+
+      toast.error(
+
+        error.response?.data?.msg ||
+
+        "Something went wrong"
+
+      );
+
+    } finally {
+
+      setLoading(false);
+
+    }
+  };
 
   return (
     <div className="min-h-screen flex bg-gradient-blue-red overflow-hidden">
@@ -118,11 +273,11 @@ const router = useRouter();
           <div className="relative w-[500px] h-[500px] mt-6 ">
 
             <DotLottieReact
-      src="/ecomm_cart.lottie"
-      loop
-      autoplay
-      
-    />
+              src="/ecomm_cart.lottie"
+              loop
+              autoplay
+
+            />
           </div>
 
         </div>
@@ -131,13 +286,13 @@ const router = useRouter();
       {/* RIGHT SIDE */}
       <div className="w-full lg:w-1/2 flex items-center justify-center px-6 py-10 relative">
 
-      
+
         <div className="absolute top-10 right-10 w-40 h-40  rounded-full blur-3xl"></div>
 
         <div className="absolute bottom-10 left-10 w-52 h-52  rounded-full blur-3xl"></div>
 
         {/* FORM CARD */}
-        <div className="relative z-10 w-full max-w-2xl  backdrop-blur-xl  rounded-3xl p-8 transition-all duration-500 hover:-translate-y-1"  style={{boxShadow : "rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px"}}>
+        <div className="relative z-10 w-full max-w-2xl  backdrop-blur-xl  rounded-3xl p-8 transition-all duration-500 hover:-translate-y-1" style={{ boxShadow: "rgba(17, 17, 26, 0.05) 0px 1px 0px, rgba(17, 17, 26, 0.1) 0px 0px 8px" }}>
 
           {/* HEADER */}
           <div className="text-center mb-8">
@@ -174,7 +329,7 @@ const router = useRouter();
 
             </div>
 
-        
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
               <div className="relative">
@@ -215,7 +370,7 @@ const router = useRouter();
 
             </div>
 
-        
+
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
 
               {/* GENDER */}

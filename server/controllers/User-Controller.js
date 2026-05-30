@@ -44,51 +44,310 @@ const getAddressById = async (req, res, next) => {
 };
 
 // Create a new address
-const createAddress = async (req, res, next) => {
+const createAddress =
+async (req, res, next) => {
+
   try {
-    const {
+
+    let {
+
       userId,
+
       fullName,
+
       businessName,
+
       gst,
+
       address,
+
       street,
+
       landmark,
+
       city,
+
       state,
+
       zipCode,
+
       mobile,
+
       altMobile,
+
       type,
+
     } = req.body;
 
-    // Check only required fields
-    if (!userId || !fullName || !address || !street || !city || !state || !zipCode || !mobile || !type) {
-      return res.status(400).json({ msg: "All required fields must be provided" });
+    // TRIM VALUES
+
+    fullName =
+fullName?.trim();
+
+    businessName =
+businessName?.trim();
+
+    gst =
+gst?.trim();
+
+    address =
+address?.trim();
+
+    street =
+street?.trim();
+
+    landmark =
+landmark?.trim();
+
+    city =
+city?.trim();
+
+    state =
+state?.trim();
+
+    zipCode =
+zipCode?.trim();
+
+    mobile =
+mobile?.trim();
+
+    altMobile =
+altMobile?.trim();
+
+    // REQUIRED FIELDS
+
+    if (
+
+!userId ||
+
+!fullName ||
+
+!address ||
+
+!street ||
+
+!city ||
+
+!state ||
+
+!zipCode ||
+
+!mobile ||
+
+!type
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"All required fields must be provided",
+      });
     }
 
-    const newAddress = new Address({
+    // NAME VALIDATION
+
+    const nameRegex =
+/^[A-Za-z ]+$/;
+
+    if (
+!nameRegex.test(fullName)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Full name should contain only letters",
+      });
+    }
+
+    // CITY VALIDATION
+
+    if (
+!nameRegex.test(city)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Invalid city name",
+      });
+    }
+
+    // STATE VALIDATION
+
+    if (!nameRegex.test(state)) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Invalid state name",
+      });
+    }
+
+    // MOBILE VALIDATION
+
+    const mobileRegex =
+/^[0-9]{10}$/;
+
+    if (
+!mobileRegex.test(mobile)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Mobile number must be 10 digits",
+      });
+    }
+
+    // ALT MOBILE VALIDATION
+
+    if (
+
+altMobile &&
+
+!mobileRegex.test(
+altMobile
+)
+
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Alternate mobile must be 10 digits",
+      });
+    }
+
+    // ZIPCODE VALIDATION
+
+    const zipRegex =
+/^[0-9]{6}$/;
+
+    if (
+!zipRegex.test(zipCode)
+    ) {
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+"Zip code must be 6 digits",
+      });
+    }
+
+    // GST VALIDATION
+
+    if (gst) {
+
+      const gstRegex =
+
+/^[0-9A-Z]{15}$/;
+
+      if (
+!gstRegex.test(gst)
+      ) {
+
+        return res.status(400).json({
+
+success: false,
+
+message:
+"Invalid GST number",
+        });
+      }
+    }
+
+    // CREATE ADDRESS
+
+    const newAddress =
+new Address({
+
       userId,
+
       fullName,
+
       businessName,
+
       gst,
+
       address,
+
       street,
+
       landmark,
+
       city,
+
       state,
+
       zipCode,
+
       mobile,
+
       altMobile,
+
       type,
     });
 
     await newAddress.save();
-    return res.status(201).json({ msg: "Address created successfully", data: newAddress });
+
+    return res.status(201).json({
+
+success: true,
+
+message:
+"Address created successfully",
+
+      data:
+newAddress,
+    });
+
   } catch (error) {
+
+    // MONGOOSE VALIDATION
+
+    if (
+error.name ===
+"ValidationError"
+    ) {
+
+      const errors =
+Object.values(
+error.errors
+).map(
+
+(err) => err.message
+);
+
+      return res.status(400).json({
+
+success: false,
+
+message:
+errors[0],
+      });
+    }
+
     next(error);
   }
 };
+
+
 
 // Update an address by ID
 const updateAddressById = async (req, res, next) => {

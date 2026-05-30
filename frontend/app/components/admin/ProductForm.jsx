@@ -9,19 +9,55 @@ import {
 } from "react-icons/fa";
 import {
   MdInventory, MdLocalOffer, MdVerified, MdInfo,
-  MdRateReview, MdQuestionAnswer,
 } from "react-icons/md";
 import toast from "react-hot-toast";
 import api, { BASE_URL } from "@/app/lib/axios";
 
+// ─── Constants ────────────────────────────────────────────────────────────────
+const IMAGE_MAX_KB   = 500;
+const IMAGE_MIN_KB   = 1;
+const IMAGE_MAX_W    = 4000;
+const IMAGE_MAX_H    = 4000;
+const ALLOWED_MIME   = ["image/jpeg", "image/png", "image/webp"];
+const ALLOWED_EXT_RE = /\.(jpe?g|png|webp)$/i;
+
+// SEO limits
+const SEO_TITLE_MAX  = 60;
+const SEO_DESC_MAX   = 160;
+const SEO_KW_MAX     = 255;
+
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 const inputCls =
   "w-full px-4 py-2.5 rounded-xl border border-gray-200 bg-gray-50 text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-blue-500/30 focus:border-blue-400 transition placeholder-gray-400";
-const textareaCls = inputCls + " resize-none min-h-[90px]";
+const inputErrCls =
+  "w-full px-4 py-2.5 rounded-xl border border-red-300 bg-red-50 text-[#0f172a] text-sm focus:outline-none focus:ring-2 focus:ring-red-400/30 focus:border-red-400 transition placeholder-gray-400";
+const textareaCls    = inputCls    + " resize-none min-h-[90px]";
+const textareaErrCls = inputErrCls + " resize-none min-h-[90px]";
 
-const emptyReview = () => ({ name: "", date: "", rating: 0, title: "", body: "", verified: "true", helpful: "0" });
-const emptyQA     = () => ({ askedBy: "", askedDate: "", question: "", answeredBy: "", answeredDate: "", answer: "" });
+// emptyReview and emptyQA removed — reviews/Q&A managed by users
 const emptyKV     = () => ({ key: "", value: "" });
+
+// Validate a single image File — returns true or an error string
+const validateImageFile = (file) =>
+  new Promise((resolve) => {
+    if (!ALLOWED_MIME.includes(file.type) || !ALLOWED_EXT_RE.test(file.name)) {
+      return resolve("Only JPG, PNG, or WEBP files are allowed.");
+    }
+    const kb = file.size / 1024;
+    if (kb < IMAGE_MIN_KB) return resolve(`Image is too small (min ${IMAGE_MIN_KB} KB).`);
+    if (kb > IMAGE_MAX_KB) return resolve(`Image exceeds ${IMAGE_MAX_KB} KB limit.`);
+
+    const img = new window.Image();
+    img.src = URL.createObjectURL(file);
+    img.onload = () => {
+      URL.revokeObjectURL(img.src);
+      if (img.width > IMAGE_MAX_W || img.height > IMAGE_MAX_H) {
+        return resolve(`Image dimensions must not exceed ${IMAGE_MAX_W}×${IMAGE_MAX_H} px.`);
+      }
+      resolve(true);
+    };
+    img.onerror = () => resolve("Invalid or corrupt image file.");
+  });
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
 function Section({ icon, title, children, defaultOpen = true }) {
@@ -32,7 +68,7 @@ function Section({ icon, title, children, defaultOpen = true }) {
         className="w-full flex items-center justify-between px-6 py-4 border-b border-gray-100 bg-gray-50 hover:bg-gray-100 transition"
       >
         <div className="flex items-center gap-3">
-          <span className="text-blue-600">{icon}</span>
+          <span className="text-primary-blue">{icon}</span>
           <span className="font-semibold text-[#0f172a] text-sm">{title}</span>
         </div>
         <span className="text-gray-400 text-xs">{open ? <FaChevronUp /> : <FaChevronDown />}</span>
@@ -42,36 +78,62 @@ function Section({ icon, title, children, defaultOpen = true }) {
   );
 }
 
-function Field({ label, required, error, children, hint }) {
+function Field({ label, required, error, children, hint, charCount }) {
   return (
     <div className="flex flex-col gap-1.5">
       {label && (
-        <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
-          {label} {required && <span className="text-red-500">*</span>}
-        </label>
+        <div className="flex items-center justify-between">
+          <label className="text-xs font-semibold text-gray-500 uppercase tracking-wider">
+            {label} {required && <span className="text-red-500">*</span>}
+          </label>
+          {charCount !== undefined && (
+            <span className={`text-xs font-mono ${charCount.over ? "text-red-500 font-semibold" : "text-gray-400"}`}>
+              {charCount.current}/{charCount.max}
+            </span>
+          )}
+        </div>
       )}
       {children}
       {hint && !error && <p className="text-xs text-gray-400">{hint}</p>}
-      {error && <p className="text-xs text-red-500 font-medium">{error}</p>}
+      {error && (
+        <p className="text-xs text-red-500 font-medium flex items-center gap-1">
+          <span>⚠</span> {error}
+        </p>
+      )}
     </div>
   );
 }
 
-function KVEditor({ field, data, onChange, onAdd, onRemove }) {
+function CharCount({ value = "", max }) {
+  const current = (value || "").length;
+  return { current, max, over: current > max };
+}
+
+function KVEditor({ field, data, onChange, onAdd, onRemove, errors: kvErrors = {} }) {
   return (
     <div className="space-y-2">
       {data.map((item, index) => (
-        <div key={index} className="flex gap-2 items-center">
-          <input type="text" name="key" value={item.key}
-            onChange={(e) => onChange(e, index, field)} placeholder="Key"
-            className={inputCls + " flex-1"} />
-          <input type="text" name="value" value={item.value}
-            onChange={(e) => onChange(e, index, field)} placeholder="Value"
-            className={inputCls + " flex-[2]"} />
-          <div className="flex gap-1">
+        <div key={index} className="flex gap-2 items-start">
+          <div className="flex-1 flex flex-col gap-1">
+            <input type="text" name="key" value={item.key}
+              onChange={(e) => onChange(e, index, field)} placeholder="Key"
+              className={kvErrors[`${field}_${index}_key`] ? inputErrCls : inputCls} />
+            {kvErrors[`${field}_${index}_key`] && (
+              <p className="text-xs text-red-500">⚠ {kvErrors[`${field}_${index}_key`]}</p>
+            )}
+          </div>
+          <div className="flex-[2] flex flex-col gap-1">
+            <input type="text" name="value" value={item.value}
+              onChange={(e) => onChange(e, index, field)} placeholder="Value"
+              className={kvErrors[`${field}_${index}_value`] ? inputErrCls : inputCls} />
+            {kvErrors[`${field}_${index}_value`] && (
+              <p className="text-xs text-red-500">⚠ {kvErrors[`${field}_${index}_value`]}</p>
+            )}
+          </div>
+          <div className="flex gap-1 pt-0.5">
             {index === data.length - 1 && (
               <button type="button" onClick={() => onAdd(field)}
-                className="w-8 h-8 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center transition">
+                className="w-8 h-8 rounded-lg bg-blue-100 text-primary-blue hover:bg-blue-200 flex items-center justify-center transition">
                 <FaPlus size={11} />
               </button>
             )}
@@ -88,161 +150,39 @@ function KVEditor({ field, data, onChange, onAdd, onRemove }) {
   );
 }
 
-function StarRating({ value, onChange }) {
+function StarRating({ value, onChange, error }) {
   const [hovered, setHovered] = useState(null);
   return (
-    <div className="flex gap-1 items-center">
-      {[1, 2, 3, 4, 5].map((star) => (
-        <button key={star} type="button"
-          onMouseEnter={() => setHovered(star)} onMouseLeave={() => setHovered(null)}
-          onClick={() => onChange(star)} className="text-xl transition-transform hover:scale-110">
-          {star <= (hovered ?? value)
-            ? <FaStar className="text-amber-400" />
-            : <FaRegStar className="text-gray-300" />}
-        </button>
-      ))}
-      {value > 0 && (
-        <span className="ml-2 text-xs font-semibold text-amber-500">
-          {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][value]}
-        </span>
-      )}
-    </div>
-  );
-}
-
-function ReviewCard({ review, index, onChange, onRemove, isLast, onAdd }) {
-  return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Review #{index + 1}</span>
-        <div className="flex gap-1">
-          {isLast && (
-            <button type="button" onClick={onAdd}
-              className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center transition">
-              <FaPlus size={10} />
-            </button>
-          )}
-          {index > 0 && (
-            <button type="button" onClick={onRemove}
-              className="w-7 h-7 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 flex items-center justify-center transition">
-              <FaTimes size={10} />
-            </button>
-          )}
-        </div>
+    <div className="flex flex-col gap-1">
+      <div className="flex gap-1 items-center">
+        {[1, 2, 3, 4, 5].map((star) => (
+          <button key={star} type="button"
+            onMouseEnter={() => setHovered(star)} onMouseLeave={() => setHovered(null)}
+            onClick={() => onChange(star)} className="text-xl transition-transform hover:scale-110">
+            {star <= (hovered ?? value)
+              ? <FaStar className="text-amber-400" />
+              : <FaRegStar className={error ? "text-red-300" : "text-gray-300"} />}
+          </button>
+        ))}
+        {value > 0 && (
+          <span className="ml-2 text-xs font-semibold text-amber-500">
+            {["", "Poor", "Fair", "Good", "Very Good", "Excellent"][value]}
+          </span>
+        )}
       </div>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Field label="Reviewer Name">
-          <input type="text" value={review.name} onChange={(e) => onChange(index, "name", e.target.value)}
-            placeholder="e.g. Rahul Sharma" className={inputCls} />
-        </Field>
-        <Field label="Date">
-          <input type="date" value={review.date} onChange={(e) => onChange(index, "date", e.target.value)} className={inputCls} />
-        </Field>
-      </div>
-      <Field label="Rating">
-        <StarRating value={review.rating} onChange={(val) => onChange(index, "rating", val)} />
-      </Field>
-      <Field label="Review Title">
-        <input type="text" value={review.title} onChange={(e) => onChange(index, "title", e.target.value)}
-          placeholder="e.g. Great product!" className={inputCls} />
-      </Field>
-      <Field label="Review Body">
-        <textarea value={review.body} onChange={(e) => onChange(index, "body", e.target.value)}
-          placeholder="Detailed review..." className={textareaCls} />
-      </Field>
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-        <Field label="Verified Purchase">
-          <select value={review.verified} onChange={(e) => onChange(index, "verified", e.target.value)} className={inputCls}>
-            <option value="true">Yes — Verified</option>
-            <option value="false">No</option>
-          </select>
-        </Field>
-        <Field label="Helpful Votes">
-          <input type="number" min="0" value={review.helpful}
-            onChange={(e) => onChange(index, "helpful", e.target.value)} placeholder="0" className={inputCls} />
-        </Field>
-      </div>
-    </div>
-  );
-}
-
-function QACard({ qa, index, onChange, onRemove, isLast, onAdd }) {
-  return (
-    <div className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
-      <div className="flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <span className="w-5 h-5 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-xs font-bold">Q</span>
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Question #{index + 1}</span>
-        </div>
-        <div className="flex gap-1">
-          {isLast && (
-            <button type="button" onClick={onAdd}
-              className="w-7 h-7 rounded-lg bg-blue-100 text-blue-600 hover:bg-blue-200 flex items-center justify-center transition">
-              <FaPlus size={10} />
-            </button>
-          )}
-          {index > 0 && (
-            <button type="button" onClick={onRemove}
-              className="w-7 h-7 rounded-lg bg-red-100 text-red-500 hover:bg-red-200 flex items-center justify-center transition">
-              <FaTimes size={10} />
-            </button>
-          )}
-        </div>
-      </div>
-      <div className="space-y-3 pl-3 border-l-2 border-blue-200">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Asked By">
-            <input type="text" value={qa.askedBy} onChange={(e) => onChange(index, "askedBy", e.target.value)}
-              placeholder="e.g. Priya K." className={inputCls} />
-          </Field>
-          <Field label="Asked On">
-            <input type="date" value={qa.askedDate} onChange={(e) => onChange(index, "askedDate", e.target.value)} className={inputCls} />
-          </Field>
-        </div>
-        <Field label="Question">
-          <textarea value={qa.question} onChange={(e) => onChange(index, "question", e.target.value)}
-            placeholder="e.g. Is this compatible with Android 14?" className={textareaCls + " min-h-[70px]"} />
-        </Field>
-      </div>
-      <div className="space-y-3 pl-3 border-l-2 border-emerald-200">
-        <div className="flex items-center gap-2 mb-1">
-          <span className="w-5 h-5 rounded-full bg-emerald-100 text-emerald-600 flex items-center justify-center text-xs font-bold">A</span>
-          <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider">Answer</span>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-          <Field label="Answered By">
-            <input type="text" value={qa.answeredBy} onChange={(e) => onChange(index, "answeredBy", e.target.value)}
-              placeholder="e.g. Seller / Admin" className={inputCls} />
-          </Field>
-          <Field label="Answered On">
-            <input type="date" value={qa.answeredDate} onChange={(e) => onChange(index, "answeredDate", e.target.value)} className={inputCls} />
-          </Field>
-        </div>
-        <Field label="Answer">
-          <textarea value={qa.answer} onChange={(e) => onChange(index, "answer", e.target.value)}
-            placeholder="Provide a helpful answer..." className={textareaCls + " min-h-[70px]"} />
-        </Field>
-      </div>
+      {error && <p className="text-xs text-red-500 font-medium">⚠ {error}</p>}
     </div>
   );
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // MAIN COMPONENT
-//
-// Props:
-//   mode          — "add" | "edit" | "duplicate"
-//   productId     — required for "edit" (the _id to PATCH)
-//   initialData   — pre-fetched product object (for edit / duplicate)
-//   onSuccess     — optional callback after save; defaults to router.push("/admin/products")
 // ─────────────────────────────────────────────────────────────────────────────
 export default function ProductForm({ mode = "add", productId, initialData, onSuccess }) {
   const router = useRouter();
 
-  // ── derive UI labels from mode ──────────────────────────────────────────
   const isEdit      = mode === "edit";
   const isDuplicate = mode === "duplicate";
-  const isAdd       = mode === "add";
 
   const pageTitle    = isEdit ? "Edit Product" : isDuplicate ? "Duplicate Product" : "Add Product";
   const pageSubtitle = isEdit
@@ -255,9 +195,8 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
   // ── react-hook-form ─────────────────────────────────────────────────────
   const {
     register, handleSubmit, formState: { errors, isSubmitting },
-    reset, setValue, watch,
+    reset, setValue, watch, trigger,
   } = useForm({
-    // Pre-fill RHF fields from initialData when available
     defaultValues: initialData
       ? {
           name:        initialData.name        || "",
@@ -273,7 +212,6 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
       : {},
   });
 
-  // ── local state — initialised from initialData when provided ───────────
   const safeKV = (arr) =>
     Array.isArray(arr) && arr.length ? arr : [emptyKV()];
 
@@ -281,7 +219,7 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
     discount:           initialData?.discount           || "",
     priceAlert:         initialData?.priceAlert         || "",
     stock:              initialData?.stock              ?? "",
-    img:                null,                              // always null until user picks new file
+    img:                null,
     imageUrl:           "",
     productDescription: initialData?.productDescription || "",
     specifications:     safeKV(initialData?.specifications),
@@ -294,20 +232,16 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
     metaKeywords:       initialData?.metaKeywords       || "",
   });
 
-  // Existing server image (edit / duplicate) — shown as preview until user replaces it
   const [existingImgUrl, setExistingImgUrl] = useState(
     initialData?.img ? `${BASE_URL}/${initialData.img}` : null
   );
-  const [mainImagePreview, setMainImagePreview] = useState(null); // new local upload preview
+  const [mainImagePreview, setMainImagePreview] = useState(null);
 
-  // Color variants
   const [colorImages, setColorImages] = useState(
     initialData?.colorVariants?.length
       ? initialData.colorVariants.map((cv) => ({
-          color:    cv.color || "",
-          images:   [],                          // can't pre-load File objects from server
-          previews: cv.images || [],             // existing server URLs shown as previews
-          existing: cv.images || [],             // keep track of which are already saved
+          color: cv.color || "", images: [],
+          previews: cv.images || [], existing: cv.images || [],
         }))
       : [{ color: "", images: [], previews: [], existing: [] }]
   );
@@ -315,13 +249,12 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
   const [isSingleImage, setIsSingleImage] = useState(false);
   const [isColorWise,   setIsColorWise]   = useState(false);
 
-  // Reviews & Q&A
-  const [reviews, setReviews] = useState(
-    initialData?.reviews?.length ? initialData.reviews : [emptyReview()]
-  );
-  const [qaList, setQaList] = useState(
-    initialData?.qaList?.length ? initialData.qaList : [emptyQA()]
-  );
+  // reviews and quesAns are managed by users — state removed
+
+  // ── custom validation error maps (for non-RHF fields) ─────────────────
+  const [kvErrors,    setKvErrors]    = useState({});
+  const [colorErrors, setColorErrors] = useState({});
+  const [imageError,  setImageError]  = useState("");
 
   // ── auto-calculate discount ────────────────────────────────────────────
   const watchPrice    = watch("price");
@@ -351,127 +284,229 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
     const updated = [...formData[field]];
     updated[index][name] = value;
     setFormData({ ...formData, [field]: updated });
+    // Clear error on change
+    const errKey = `${field}_${index}_${name}`;
+    if (kvErrors[errKey]) setKvErrors((prev) => { const n = { ...prev }; delete n[errKey]; return n; });
   };
 
   const handleAddField    = (field) => setFormData({ ...formData, [field]: [...formData[field], emptyKV()] });
   const handleRemoveField = (index, field) =>
     setFormData({ ...formData, [field]: formData[field].filter((_, i) => i !== index) });
 
-  const validateImage = async (fileList) => {
-    if (!fileList || fileList.length === 0) return "Image is required";
-    const file = fileList[0];
-    const fileSizeKB = file.size / 1024;
-    return new Promise((resolve) => {
-      const img = new window.Image();
-      img.src = URL.createObjectURL(file);
-      img.onload = () => {
-        if (fileSizeKB < 1 || fileSizeKB > 500) resolve("Image must be between 1–500 KB.");
-        else resolve(true);
-      };
-      img.onerror = () => resolve("Invalid image file.");
-    });
-  };
-
-  const handleFileChange = (e) => {
+  const handleFileChange = async (e) => {
     const file = e.target.files[0];
-    if (file) {
-      setIsSingleImage(true);
-      setIsColorWise(false);
-      const url = URL.createObjectURL(file);
-      setMainImagePreview(url);
-      setExistingImgUrl(null); // replaced
-      setFormData((prev) => ({ ...prev, img: file, imageUrl: url }));
-    } else {
-      setIsSingleImage(false);
-      setMainImagePreview(null);
-    }
+    if (!file) { setIsSingleImage(false); setMainImagePreview(null); return; }
+    const result = await validateImageFile(file);
+    if (result !== true) { setImageError(result); return; }
+    setImageError("");
+    setIsSingleImage(true);
+    setIsColorWise(false);
+    const url = URL.createObjectURL(file);
+    setMainImagePreview(url);
+    setExistingImgUrl(null);
+    setFormData((prev) => ({ ...prev, img: file, imageUrl: url }));
   };
 
-  const handleColorImageChange = (idx, field, value) => {
+  const handleColorImageChange = async (idx, field, value) => {
     const updated = [...colorImages];
     if (field === "images") {
-      updated[idx].images   = Array.from(value);
+      const files  = Array.from(value);
+      const errMap = { ...colorErrors };
+
+      // Validate each file
+      const validations = await Promise.all(files.map((f) => validateImageFile(f)));
+      const badIdx = validations.findIndex((r) => r !== true);
+      if (badIdx !== -1) {
+        errMap[`color_${idx}_images`] = validations[badIdx];
+        setColorErrors(errMap);
+        return;
+      }
+      delete errMap[`color_${idx}_images`];
+      setColorErrors(errMap);
+
+      updated[idx].images   = files;
       updated[idx].previews = [
         ...updated[idx].existing,
-        ...Array.from(value).map((f) => URL.createObjectURL(f)),
+        ...files.map((f) => URL.createObjectURL(f)),
       ];
       const anySelected = updated.some((ci) => ci.images.length > 0);
       setIsColorWise(anySelected);
       if (anySelected) setIsSingleImage(false);
     } else {
       updated[idx][field] = value;
+      if (colorErrors[`color_${idx}_color`]) {
+        setColorErrors((prev) => { const n = { ...prev }; delete n[`color_${idx}_color`]; return n; });
+      }
     }
     setColorImages(updated);
   };
 
-  // Reviews
-  const handleReviewChange = (index, field, value) => {
-    const updated = [...reviews];
-    updated[index][field] = value;
-    setReviews(updated);
-  };
-  const addReview    = () => setReviews([...reviews, emptyReview()]);
-  const removeReview = (i) => setReviews(reviews.filter((_, idx) => idx !== i));
+  // reviews + Q&A handlers removed — managed by users
 
-  // Q&A
-  const handleQAChange = (index, field, value) => {
-    const updated = [...qaList];
-    updated[index][field] = value;
-    setQaList(updated);
+  // ── Validate non-RHF sections ─────────────────────────────────────────
+  /**
+   * Returns { isValid: bool, errorMap: {}, errorSummary: string[] }
+   */
+  const validateCustomSections = async () => {
+    const newKvErrors    = {};
+    const newColorErrors = {};
+    const summary        = [];
+
+    // ── Image ──────────────────────────────────────────────────────────
+    const needsImage = !isEdit && !isDuplicate && !existingImgUrl && !isColorWise;
+    if (needsImage && !formData.img) {
+      setImageError("Main product image is required.");
+      summary.push("Main product image is required.");
+    } else if (formData.img) {
+      const imgResult = await validateImageFile(formData.img);
+      if (imgResult !== true) {
+        setImageError(imgResult);
+        summary.push(`Image: ${imgResult}`);
+      } else {
+        setImageError("");
+      }
+    }
+
+    // ── Color variants ────────────────────────────────────────────────
+    colorImages.forEach((ci, idx) => {
+      if (ci.images.length > 0 && !ci.color.trim()) {
+        newColorErrors[`color_${idx}_color`] = "Color name is required when images are uploaded.";
+        summary.push(`Color Variant ${idx + 1}: Color name is required.`);
+      }
+      if (ci.color.trim() && ci.images.length === 0 && !ci.existing?.length) {
+        newColorErrors[`color_${idx}_images`] = "Please upload at least one image for this color.";
+        summary.push(`Color Variant ${idx + 1}: At least one image is required.`);
+      }
+    });
+
+    // ── KV editors — check for orphaned keys (key without value) ──────
+    ["specifications", "warranty", "otherinfo", "offers"].forEach((section) => {
+      formData[section].forEach((item, idx) => {
+        if (item.key.trim() && !item.value.trim()) {
+          newKvErrors[`${section}_${idx}_value`] = "Value is required when key is set.";
+          summary.push(`${section.charAt(0).toUpperCase() + section.slice(1)} row ${idx + 1}: Value missing.`);
+        }
+        if (!item.key.trim() && item.value.trim()) {
+          newKvErrors[`${section}_${idx}_key`] = "Key is required when value is set.";
+          summary.push(`${section.charAt(0).toUpperCase() + section.slice(1)} row ${idx + 1}: Key missing.`);
+        }
+      });
+    });
+
+    // reviews + Q&A validation removed — managed by users
+
+    // ── SEO character limits ──────────────────────────────────────────
+    if (formData.metaTitle.length > SEO_TITLE_MAX) {
+      summary.push(`SEO Title exceeds ${SEO_TITLE_MAX} characters.`);
+    }
+    if (formData.metaDescription.length > SEO_DESC_MAX) {
+      summary.push(`SEO Description exceeds ${SEO_DESC_MAX} characters.`);
+    }
+    if (formData.metaKeywords.length > SEO_KW_MAX) {
+      summary.push(`SEO Keywords exceeds ${SEO_KW_MAX} characters.`);
+    }
+
+    setKvErrors(newKvErrors);
+    setColorErrors(newColorErrors);
+
+    const isValid =
+      summary.length === 0 &&
+      Object.keys(newKvErrors).length    === 0 &&
+      Object.keys(newColorErrors).length === 0;
+
+    return { isValid, summary };
   };
-  const addQA    = () => setQaList([...qaList, emptyQA()]);
-  const removeQA = (i) => setQaList(qaList.filter((_, idx) => idx !== i));
 
   // ── submit ─────────────────────────────────────────────────────────────
   const onSubmit = async (data) => {
+    // 1. Trigger RHF validation
+    const rhfValid = await trigger();
+
+    // 2. Validate custom sections
+    const { isValid: customValid, summary } = await validateCustomSections();
+
+    if (!rhfValid || !customValid) {
+      // Scroll to first visible error
+      setTimeout(() => {
+        const firstErr = document.querySelector("[data-error='true'], .text-red-500");
+        if (firstErr) firstErr.scrollIntoView({ behavior: "smooth", block: "center" });
+      }, 50);
+
+      // Toast summary
+      const rhfMessages = Object.values(errors).map((e) => e?.message).filter(Boolean);
+      const allMessages = [...rhfMessages, ...summary];
+      const unique      = [...new Set(allMessages)];
+
+      if (unique.length === 1) {
+        toast.error(unique[0]);
+      } else if (unique.length > 0) {
+        toast.error(
+          <div className="text-sm">
+            <p className="font-semibold mb-1">Please fix {unique.length} error{unique.length > 1 ? "s" : ""}:</p>
+            <ul className="list-disc list-inside space-y-0.5 text-xs">
+              {unique.slice(0, 5).map((msg, i) => <li key={i}>{msg}</li>)}
+              {unique.length > 5 && <li className="text-gray-400">…and {unique.length - 5} more</li>}
+            </ul>
+          </div>,
+          { duration: 6000 }
+        );
+      }
+      return;
+    }
+
     const merged = { ...data, ...formData };
     const fd = new FormData();
+
+    // Fields that map to Number in the Mongoose schema — never send "" for these
+    const NUMBER_FIELDS = new Set(["price", "oldPrice", "gst", "stock", "discount", "rating", "ratingCount", "ratingTotal"]);
+    const SKIP_KEYS     = new Set(["images", "imagesPreview", "imageUrl"]);
 
     Object.entries(merged).forEach(([key, value]) => {
       if (key === "img") {
         if (formData.img) fd.append("img", formData.img);
-        // if no new file: edit keeps existing img on server (backend should handle)
-      } else if (Array.isArray(value) && value.length && typeof value[0] === "object") {
-        fd.append(key, JSON.stringify(value));
-      } else if (!["images", "imagesPreview"].includes(key)) {
-        fd.append(key, value ?? "");
+        return;
       }
+      if (SKIP_KEYS.has(key)) return;
+
+      if (Array.isArray(value) && value.length && typeof value[0] === "object") {
+        fd.append(key, JSON.stringify(value));
+        return;
+      }
+
+      if (NUMBER_FIELDS.has(key)) {
+        // Only append if we actually have a valid number; skip empty/null/NaN
+        const num = Number(value);
+        if (value !== "" && value !== null && value !== undefined && !isNaN(num)) {
+          fd.append(key, num);
+        }
+        return;
+      }
+
+      // All other fields — send as-is (empty string is fine for text fields)
+      fd.append(key, value ?? "");
     });
 
     colorImages.forEach(({ color, images, existing }) => {
       if (color) {
         images.forEach((imgFile) => fd.append("colorImages", imgFile));
         fd.append("colorNames", color);
-        // tell backend which images already exist so it doesn't delete them
         fd.append("existingColorImages", JSON.stringify(existing));
       }
     });
     fd.append("colorImageCounts", JSON.stringify(colorImages.map((ci) => ci.images.length)));
-    fd.append("reviews", JSON.stringify(reviews.filter((r) => r.body || r.rating > 0)));
-    fd.append("qaList",  JSON.stringify(qaList.filter((q) => q.question)));
+
+    // reviews and quesAns are managed by users — not sent from admin form
 
     try {
       if (isEdit) {
-        await api.put(`/api/admin/productpage/${productId}`, fd
-
-          ,{
-    headers: {
-      "Content-Type":
-        "multipart/form-data",
-    },
-  }
-        );
+        await api.put(`/api/admin/productpage/${productId}`, fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         toast.success("Product updated successfully!");
       } else {
-        // both "add" and "duplicate" POST to the same endpoint
-        await api.post("/api/admin/productpage", fd,
-            {
-    headers: {
-      "Content-Type":
-        "multipart/form-data",
-    },
-  }
-        );
+        await api.post("/api/admin/productpage", fd, {
+          headers: { "Content-Type": "multipart/form-data" },
+        });
         toast.success(isDuplicate ? "Product duplicated successfully!" : "Product added successfully!");
       }
 
@@ -482,7 +517,6 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
       }
 
       if (!isEdit) {
-        // Only fully reset on add / duplicate — not on edit
         reset();
         setFormData({
           discount: "", priceAlert: "", stock: "", img: null, imageUrl: "",
@@ -494,15 +528,15 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
         setColorImages([{ color: "", images: [], previews: [], existing: [] }]);
         setMainImagePreview(null);
         setExistingImgUrl(null);
-        setReviews([emptyReview()]);
-        setQaList([emptyQA()]);
+        setKvErrors({});
+        setColorErrors({});
+        setImageError("");
       }
     } catch {
       toast.error(isEdit ? "Failed to update product." : "Failed to save product.");
     }
   };
 
-  // ── current image to show (new upload takes precedence over existing) ──
   const shownImage = mainImagePreview || existingImgUrl;
 
   // ── render ─────────────────────────────────────────────────────────────
@@ -514,16 +548,11 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
         <div>
           <div className="flex items-center gap-3 mb-1">
             <h1 className="text-3xl font-bold text-[#0f172a]">{pageTitle}</h1>
-            {/* Mode badge */}
             {isDuplicate && (
-              <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-blue-600 text-xs font-semibold">
-                Duplicate
-              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-blue-100 text-primary-blue text-xs font-semibold">Duplicate</span>
             )}
             {isEdit && (
-              <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-600 text-xs font-semibold">
-                Editing
-              </span>
+              <span className="px-2.5 py-1 rounded-lg bg-amber-100 text-amber-600 text-xs font-semibold">Editing</span>
             )}
           </div>
           <p className="text-gray-500 text-sm">{pageSubtitle}</p>
@@ -534,7 +563,7 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
             Cancel
           </button>
           <button type="button" onClick={handleSubmit(onSubmit)} disabled={isSubmitting}
-            className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-to-r from-blue-600 to-red-500 text-white font-semibold text-sm shadow-md hover:opacity-90 transition disabled:opacity-60">
+            className="flex items-center gap-2 px-6 py-2.5 rounded-2xl bg-gradient-blue-red text-white font-semibold text-sm shadow-md hover:opacity-90 transition disabled:opacity-60">
             {isSubmitting
               ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
               : <FaPlus size={12} />}
@@ -554,36 +583,90 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
               <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
                 <div className="md:col-span-2">
                   <Field label="Product Name" required error={errors.name?.message}>
-                    <input type="text" placeholder="e.g. Sony WH-1000XM5" className={inputCls}
-                      {...register("name", { required: "Name is required" })} />
+                    <input
+                      type="text" placeholder="e.g. Sony WH-1000XM5"
+                      className={errors.name ? inputErrCls : inputCls}
+                      {...register("name", {
+                        required:  "Product name is required",
+                        minLength: { value: 2,   message: "Minimum 2 characters required" },
+                        maxLength: { value: 200, message: "Maximum 200 characters allowed" },
+                        validate:  (v) => v.trim().length > 0 || "Name cannot contain only spaces",
+                      })}
+                    />
                   </Field>
                 </div>
-                <Field label="Brand">
-                  <input type="text" placeholder="e.g. Sony" className={inputCls} {...register("Brand")} />
+
+                <Field label="Brand" error={errors.Brand?.message}>
+                  <input type="text" placeholder="e.g. Sony"
+                    className={errors.Brand ? inputErrCls : inputCls}
+                    {...register("Brand", {
+                      minLength: { value: 2, message: "Brand name too short" },
+                      maxLength: { value: 100, message: "Brand name too long" },
+                      validate:  (v) => !v || v.trim().length > 0 || "Invalid brand",
+                    })}
+                  />
                 </Field>
+
                 <Field label="Category" required error={errors.category?.message}>
-                  <input type="text" placeholder="e.g. Electronics" className={inputCls}
-                    {...register("category", { required: "Category is required" })} />
+                  <input type="text" placeholder="e.g. Electronics"
+                    className={errors.category ? inputErrCls : inputCls}
+                    {...register("category", {
+                      required:  "Category is required",
+                      minLength: { value: 2,   message: "Category too short" },
+                      maxLength: { value: 100, message: "Category too long" },
+                      validate:  (v) => v.trim().length > 0 || "Invalid category",
+                    })}
+                  />
                 </Field>
+
                 <Field label="Sub-Category" required error={errors.subCategory?.message}>
-                  <input type="text" placeholder="e.g. Headphones" className={inputCls}
-                    {...register("subCategory", { required: "Sub-Category is required" })} />
+                  <input type="text" placeholder="e.g. Headphones"
+                    className={errors.subCategory ? inputErrCls : inputCls}
+                    {...register("subCategory", {
+                      required:  "Sub-category is required",
+                      minLength: { value: 2,   message: "Sub-category too short" },
+                      maxLength: { value: 100, message: "Sub-category too long" },
+                      validate:  (v) => v.trim().length > 0 || "Invalid sub-category",
+                    })}
+                  />
                 </Field>
+
                 <Field label="Stock" required error={errors.stock?.message}>
-                  <input type="number" placeholder="0" className={inputCls}
-                    value={formData.stock}
-                    {...register("stock", { required: "Stock is required" })}
-                    onChange={handleInputChange} />
+                  <input type="number" placeholder="0"
+                    className={errors.stock ? inputErrCls : inputCls}
+                    {...register("stock", {
+                      required: "Stock is required",
+                      min:      { value: 0,      message: "Stock cannot be negative" },
+                      max:      { value: 999999, message: "Stock value too large" },
+                      validate: (v) => !isNaN(v) || "Invalid stock value",
+                    })}
+                    onChange={handleInputChange}
+                  />
                 </Field>
+
                 <div className="md:col-span-2">
-                  <Field label="Short Description">
-                    <textarea placeholder="Brief description..." className={textareaCls} {...register("descriptions")} />
+                  <Field label="Short Description" error={errors.descriptions?.message}
+                    charCount={CharCount({ value: watch("descriptions"), max: 500 })}>
+                    <textarea placeholder="Brief description..."
+                      className={errors.descriptions ? textareaErrCls : textareaCls}
+                      {...register("descriptions", {
+                        maxLength: { value: 500, message: "Short description exceeds 500 characters" },
+                        validate:  (v) => !v || v.trim().length > 0 || "Invalid description",
+                      })}
+                    />
                   </Field>
                 </div>
+
                 <div className="md:col-span-2">
-                  <Field label="Detailed Product Description">
-                    <textarea placeholder="Full product description..." className={textareaCls + " min-h-[130px]"}
-                      name="productDescription" value={formData.productDescription} onChange={handleInputChange} />
+                  <Field label="Detailed Product Description" error={errors.productDescription?.message}
+                    charCount={CharCount({ value: watch("productDescription"), max: 3000 })}>
+                    <textarea placeholder="Full product description..."
+                      className={(errors.productDescription ? textareaErrCls : textareaCls) + " min-h-[130px]"}
+                      {...register("productDescription", {
+                        maxLength: { value: 3000, message: "Detailed description exceeds 3000 characters" },
+                        validate:  (v) => !v || v.trim().length > 0 || "Invalid description",
+                      })}
+                    />
                   </Field>
                 </div>
               </div>
@@ -595,17 +678,36 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                 <Field label="Old Price (MRP)" required error={errors.oldPrice?.message}>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input type="number" placeholder="0.00" className={inputCls + " pl-8"}
-                      {...register("oldPrice", { required: "Old Price is required" })} />
+                    <input type="number" placeholder="0.00"
+                      className={(errors.oldPrice ? inputErrCls : inputCls) + " pl-8"}
+                      {...register("oldPrice", {
+                        required:    "Old Price is required",
+                        min:         { value: 1,          message: "Old price must be greater than 0" },
+                        max:         { value: 10_000_000, message: "Price value too large" },
+                        validate:    (v) => !isNaN(v) || "Invalid price",
+                      })}
+                    />
                   </div>
                 </Field>
+
                 <Field label="Selling Price" required error={errors.price?.message}>
                   <div className="relative">
                     <span className="absolute left-3.5 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-semibold">₹</span>
-                    <input type="number" placeholder="0.00" className={inputCls + " pl-8"}
-                      value={formData.price || ""}
-                      {...register("price", { required: "Price is required" })}
-                      onChange={handleInputChange} />
+                    <input type="number" placeholder="0.00"
+                      className={(errors.price ? inputErrCls : inputCls) + " pl-8"}
+                      {...register("price", {
+                        required: "Selling price is required",
+                        min:      { value: 1,          message: "Price must be greater than 0" },
+                        max:      { value: 10_000_000, message: "Price value too large" },
+                        validate: (v) => {
+                          if (isNaN(v)) return "Invalid price";
+                          const old = Number(watchOldPrice);
+                          if (old && Number(v) > old) return "Selling price cannot exceed MRP";
+                          return true;
+                        },
+                      })}
+                      onChange={handleInputChange}
+                    />
                   </div>
                   {watchPrice && !isNaN(Number(watchPrice)) && (
                     <p className="text-xs text-emerald-600 font-semibold mt-1">
@@ -613,19 +715,34 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                     </p>
                   )}
                 </Field>
+
                 <Field label="Discount (%)">
                   <input type="text" readOnly
                     value={formData.discount ? `${formData.discount}% OFF` : ""}
                     placeholder="Auto-calculated"
-                    className={inputCls + " bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold cursor-not-allowed"} />
+                    className={inputCls + " bg-emerald-50 border-emerald-200 text-emerald-700 font-semibold cursor-not-allowed"}
+                  />
                 </Field>
+
                 <Field label="GST (%)" required error={errors.gst?.message}>
-                  <input type="number" placeholder="e.g. 18" className={inputCls}
-                    {...register("gst", { required: "GST is required" })} />
+                  <input type="number" placeholder="e.g. 18"
+                    className={errors.gst ? inputErrCls : inputCls}
+                    {...register("gst", {
+                      required: "GST is required",
+                      min:      { value: 0,   message: "GST cannot be negative" },
+                      max:      { value: 100, message: "GST cannot exceed 100%" },
+                      validate: (v) => !isNaN(v) || "Invalid GST value",
+                    })}
+                  />
                 </Field>
+
                 <Field label="Price Alert">
                   <input type="text" name="priceAlert" value={formData.priceAlert}
-                    onChange={handleInputChange} placeholder="e.g. Limited time offer!" className={inputCls} />
+                    onChange={handleInputChange}
+                    placeholder="e.g. Limited time offer!"
+                    maxLength={100}
+                    className={inputCls}
+                  />
                 </Field>
               </div>
             </Section>
@@ -633,23 +750,27 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
             {/* Specifications */}
             <Section icon={<MdVerified size={18} />} title="Specifications">
               <KVEditor field="specifications" data={formData.specifications}
-                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField} />
+                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField}
+                errors={kvErrors} />
             </Section>
 
             {/* Warranty */}
             <Section icon={<MdVerified size={18} />} title="Warranty">
               <KVEditor field="warranty" data={formData.warranty}
-                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField} />
+                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField}
+                errors={kvErrors} />
             </Section>
 
             {/* Other Info */}
             <Section icon={<MdInfo size={18} />} title="Other Information" defaultOpen={false}>
               <div className="space-y-4">
                 <KVEditor field="otherinfo" data={formData.otherinfo}
-                  onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField} />
+                  onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField}
+                  errors={kvErrors} />
                 <Field label="Plain Text Info">
                   <textarea name="otherinfoText" value={formData.otherinfoText}
-                    onChange={handleInputChange} placeholder="Any additional info..." className={textareaCls} />
+                    onChange={handleInputChange} placeholder="Any additional info..."
+                    maxLength={1000} className={textareaCls} />
                 </Field>
               </div>
             </Section>
@@ -657,47 +778,40 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
             {/* Offers */}
             <Section icon={<MdLocalOffer size={18} />} title="Offers & Deals" defaultOpen={false}>
               <KVEditor field="offers" data={formData.offers}
-                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField} />
+                onChange={handleArrayChange} onAdd={handleAddField} onRemove={handleRemoveField}
+                errors={kvErrors} />
             </Section>
 
-            {/* Reviews */}
-            <Section icon={<MdRateReview size={18} />} title="Customer Reviews" defaultOpen={false}>
-              <div className="space-y-4">
-                <p className="text-xs text-gray-400">Pre-seed reviews shown on the product page.</p>
-                {reviews.map((review, index) => (
-                  <ReviewCard key={index} review={review} index={index}
-                    onChange={handleReviewChange} onRemove={() => removeReview(index)}
-                    isLast={index === reviews.length - 1} onAdd={addReview} />
-                ))}
-              </div>
-            </Section>
-
-            {/* Q&A */}
-            <Section icon={<MdQuestionAnswer size={18} />} title="Questions & Answers" defaultOpen={false}>
-              <div className="space-y-4">
-                <p className="text-xs text-gray-400">Common questions with answers to help buyers decide.</p>
-                {qaList.map((qa, index) => (
-                  <QACard key={index} qa={qa} index={index}
-                    onChange={handleQAChange} onRemove={() => removeQA(index)}
-                    isLast={index === qaList.length - 1} onAdd={addQA} />
-                ))}
-              </div>
-            </Section>
+            {/* Reviews & Q&A removed — managed by users */}
 
             {/* SEO */}
             <Section icon={<MdInfo size={18} />} title="SEO Settings" defaultOpen={false}>
               <div className="space-y-5">
-                <Field label="SEO Title" hint="Recommended: 50–60 characters">
+                <Field label="SEO Title"
+                  hint={`Recommended: 50–${SEO_TITLE_MAX} characters`}
+                  error={formData.metaTitle.length > SEO_TITLE_MAX ? `Exceeds ${SEO_TITLE_MAX} character limit` : undefined}
+                  charCount={CharCount({ value: formData.metaTitle, max: SEO_TITLE_MAX })}>
                   <input type="text" name="metaTitle" value={formData.metaTitle}
-                    onChange={handleInputChange} placeholder="Page title for search engines" className={inputCls} />
+                    onChange={handleInputChange} placeholder="Page title for search engines"
+                    className={formData.metaTitle.length > SEO_TITLE_MAX ? inputErrCls : inputCls} />
                 </Field>
-                <Field label="SEO Description" hint="Recommended: 150–160 characters">
+
+                <Field label="SEO Description"
+                  hint={`Recommended: 150–${SEO_DESC_MAX} characters`}
+                  error={formData.metaDescription.length > SEO_DESC_MAX ? `Exceeds ${SEO_DESC_MAX} character limit` : undefined}
+                  charCount={CharCount({ value: formData.metaDescription, max: SEO_DESC_MAX })}>
                   <textarea name="metaDescription" value={formData.metaDescription}
-                    onChange={handleInputChange} placeholder="Brief summary for search results..." className={textareaCls} />
+                    onChange={handleInputChange} placeholder="Brief summary for search results..."
+                    className={formData.metaDescription.length > SEO_DESC_MAX ? textareaErrCls : textareaCls} />
                 </Field>
-                <Field label="SEO Keywords" hint="Comma-separated keywords">
+
+                <Field label="SEO Keywords"
+                  hint="Comma-separated keywords"
+                  error={formData.metaKeywords.length > SEO_KW_MAX ? `Exceeds ${SEO_KW_MAX} character limit` : undefined}
+                  charCount={CharCount({ value: formData.metaKeywords, max: SEO_KW_MAX })}>
                   <input type="text" name="metaKeywords" value={formData.metaKeywords}
-                    onChange={handleInputChange} placeholder="e.g. headphones, noise cancelling, sony" className={inputCls} />
+                    onChange={handleInputChange} placeholder="e.g. headphones, noise cancelling, sony"
+                    className={formData.metaKeywords.length > SEO_KW_MAX ? inputErrCls : inputCls} />
                 </Field>
               </div>
             </Section>
@@ -709,14 +823,18 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
             {/* Main Image */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <span className="text-blue-600"><FaCloudUploadAlt size={18} /></span>
+                <span className="text-primary-blue"><FaCloudUploadAlt size={18} /></span>
                 <span className="font-semibold text-[#0f172a] text-sm">Main Product Image</span>
                 {!isEdit && <span className="text-red-500 text-xs">*</span>}
               </div>
               <div className="p-6">
                 <label htmlFor="mainImage"
                   className={`flex flex-col items-center justify-center w-full h-52 rounded-xl border-2 border-dashed cursor-pointer transition ${
-                    shownImage ? "border-blue-300 bg-blue-50" : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50"
+                    imageError
+                      ? "border-red-300 bg-red-50"
+                      : shownImage
+                      ? "border-blue-300 bg-blue-50"
+                      : "border-gray-200 bg-gray-50 hover:border-blue-300 hover:bg-blue-50"
                   }`}
                 >
                   {shownImage ? (
@@ -732,12 +850,12 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                           setFormData((prev) => ({ ...prev, img: null, imageUrl: "" }));
                           setValue("img", null);
                           setIsSingleImage(false);
+                          setImageError("");
                         }}
                         className="absolute top-2 right-2 w-6 h-6 rounded-full bg-red-500 text-white flex items-center justify-center hover:bg-red-600 transition"
                       >
                         <FaTimes size={10} />
                       </button>
-                      {/* Show "existing" badge when it's the saved image (not a new upload) */}
                       {existingImgUrl && !mainImagePreview && (
                         <span className="absolute bottom-2 left-2 px-2 py-0.5 rounded-md bg-black/40 text-white text-[10px] font-semibold">
                           Current image
@@ -746,65 +864,41 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                     </div>
                   ) : (
                     <div className="flex flex-col items-center gap-2 text-gray-400">
-                      <FaCloudUploadAlt size={32} />
+                      <FaCloudUploadAlt size={32} className={imageError ? "text-red-400" : ""} />
                       <p className="text-sm font-medium">
                         {isEdit ? "Click to replace image" : "Click to upload"}
                       </p>
-                      <p className="text-xs">PNG, JPG up to 500KB</p>
+                      <p className="text-xs">PNG, JPG, WEBP · 1–{IMAGE_MAX_KB} KB · max {IMAGE_MAX_W}×{IMAGE_MAX_H}px</p>
                     </div>
                   )}
                 </label>
-               <input
-  id="mainImage"
-  type="file"
-  accept="image/*"
-  className="hidden"
 
-  {...register("img", {
+                <input id="mainImage" type="file" accept="image/*" className="hidden"
+                  onChange={handleFileChange} />
 
-    required:
-      (!isEdit &&
-       !isDuplicate &&
-       !existingImgUrl &&
-       !isColorWise)
-        ? "Main image is required"
-        : false,
-
-    validate: async (files) => {
-
-      // IF EXISTING IMAGE PRESENT
-      // SKIP VALIDATION
-
-      if (
-        existingImgUrl ||
-        mainImagePreview
-      ) {
-        return true;
-      }
-
-      return validateImage(files);
-    },
-
-    onChange: (e) => {
-
-      handleFileChange(e);
-    },
-
-  })}
-/>
-                {errors.img && <p className="text-xs text-red-500 font-medium mt-2">{errors.img.message}</p>}
+                {imageError && (
+                  <p className="text-xs text-red-500 font-medium mt-2 flex items-center gap-1">
+                    <span>⚠</span> {imageError}
+                  </p>
+                )}
               </div>
             </div>
 
             {/* Color Variants */}
             <div className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden">
               <div className="flex items-center gap-3 px-6 py-4 bg-gray-50 border-b border-gray-100">
-                <span className="text-blue-600"><FaPalette size={16} /></span>
+                <span className="text-primary-blue"><FaPalette size={16} /></span>
                 <span className="font-semibold text-[#0f172a] text-sm">Color Variants</span>
               </div>
               <div className="p-6 space-y-4">
                 {colorImages.map((ci, idx) => (
-                  <div key={idx} className="rounded-xl border border-gray-100 bg-gray-50 p-4 space-y-3">
+                  <div key={idx}
+                    className={`rounded-xl border bg-gray-50 p-4 space-y-3 ${
+                      colorErrors[`color_${idx}_color`] || colorErrors[`color_${idx}_images`]
+                        ? "border-red-200"
+                        : "border-gray-100"
+                    }`}
+                  >
                     <div className="flex items-center justify-between">
                       <span className="text-xs font-semibold text-gray-500 uppercase tracking-wider">Variant {idx + 1}</span>
                       {colorImages.length > 1 && (
@@ -815,21 +909,41 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                         </button>
                       )}
                     </div>
-                    <input type="text" placeholder="Color name (e.g. Midnight Black)"
-                      value={ci.color} onChange={(e) => handleColorImageChange(idx, "color", e.target.value)}
-                      className={inputCls} />
-                    <label className={`flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed cursor-pointer transition ${
-                      ci.images.length ? "border-blue-300 bg-blue-50" : "border-gray-200 hover:border-blue-300"}`}>
-                      <span className="text-xs text-gray-400 font-medium">
-                        {ci.images.length
-                          ? `${ci.images.length} new file(s)`
-                          : ci.existing?.length
-                          ? `${ci.existing.length} saved — click to add more`
-                          : "Upload images"}
-                      </span>
-                      <input type="file" accept="image/*" multiple className="hidden"
-                        onChange={(e) => handleColorImageChange(idx, "images", e.target.files)} />
-                    </label>
+
+                    <div className="flex flex-col gap-1">
+                      <input type="text" placeholder="Color name (e.g. Midnight Black)"
+                        value={ci.color}
+                        onChange={(e) => handleColorImageChange(idx, "color", e.target.value)}
+                        className={colorErrors[`color_${idx}_color`] ? inputErrCls : inputCls}
+                      />
+                      {colorErrors[`color_${idx}_color`] && (
+                        <p className="text-xs text-red-500">⚠ {colorErrors[`color_${idx}_color`]}</p>
+                      )}
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                      <label className={`flex flex-col items-center justify-center w-full h-24 rounded-xl border-2 border-dashed cursor-pointer transition ${
+                        colorErrors[`color_${idx}_images`]
+                          ? "border-red-300 bg-red-50"
+                          : ci.images.length
+                          ? "border-blue-300 bg-blue-50"
+                          : "border-gray-200 hover:border-blue-300"
+                      }`}>
+                        <span className="text-xs text-gray-400 font-medium">
+                          {ci.images.length
+                            ? `${ci.images.length} new file(s) selected`
+                            : ci.existing?.length
+                            ? `${ci.existing.length} saved — click to add more`
+                            : "Upload images (JPG/PNG/WEBP, max 500 KB each)"}
+                        </span>
+                        <input type="file" accept="image/*" multiple className="hidden"
+                          onChange={(e) => handleColorImageChange(idx, "images", e.target.files)} />
+                      </label>
+                      {colorErrors[`color_${idx}_images`] && (
+                        <p className="text-xs text-red-500">⚠ {colorErrors[`color_${idx}_images`]}</p>
+                      )}
+                    </div>
+
                     {ci.previews.length > 0 && (
                       <div className="flex flex-wrap gap-2">
                         {ci.previews.map((src, i) => (
@@ -841,6 +955,7 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
                     )}
                   </div>
                 ))}
+
                 <button type="button" disabled={isSingleImage}
                   onClick={() => setColorImages([...colorImages, { color: "", images: [], previews: [], existing: [] }])}
                   className="w-full py-2.5 rounded-xl border-2 border-dashed border-blue-200 text-blue-500 text-sm font-semibold hover:bg-blue-50 transition flex items-center justify-center gap-2 disabled:opacity-40 disabled:cursor-not-allowed">
@@ -852,7 +967,7 @@ export default function ProductForm({ mode = "add", productId, initialData, onSu
             {/* Mobile save */}
             <div className="xl:hidden">
               <button type="submit" disabled={isSubmitting}
-                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-to-r from-blue-600 to-red-500 text-white font-semibold shadow-md hover:opacity-90 transition disabled:opacity-60">
+                className="w-full flex items-center justify-center gap-2 px-6 py-3 rounded-2xl bg-gradient-blue-red text-white font-semibold shadow-md hover:opacity-90 transition disabled:opacity-60">
                 {isSubmitting
                   ? <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
                   : <FaPlus size={12} />}

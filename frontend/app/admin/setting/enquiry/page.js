@@ -125,7 +125,7 @@ const page = () => {
 
         </div>
 
-        <div>Type</div>
+        <div className='col-span-1'>Type</div>
 
         <div className="col-span-2">
 
@@ -238,7 +238,7 @@ const page = () => {
 
           {/* TYPE */}
 
-          <div>
+          <div className='col-span-1'>
 
             {inq.isBulkOrder ? (
 
@@ -250,7 +250,7 @@ const page = () => {
 
             ) : inq.isCustomization ? (
 
-              <span className="bg-blue-100 text-blue-600 px-3 py-2 rounded-full text-xs font-semibold">
+              <span className="text-primary-blue text-xs font-semibold ">
 
                 Customization
 

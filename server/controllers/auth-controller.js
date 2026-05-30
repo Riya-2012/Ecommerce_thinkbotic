@@ -49,6 +49,7 @@ const signUp = async (req, res, next) => {
             msg: "Registration successful",
             token: token,
             userId: newUser._id.toString(),
+                    user: newUser,
         });
     } catch (error) {
         res.status(500).json({ msg: "Something broke!", error: error.message });
@@ -165,7 +166,9 @@ const updateUserById = async (req, res, next) => {
         return res.status(200).json(updatedData);
     } catch (error) {
         next(error);
+        
     }
+
 };
 
 const logout = async (req, res) => {

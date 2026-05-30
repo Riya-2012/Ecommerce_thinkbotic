@@ -71,15 +71,15 @@ function Address({ onContinueToPayment }) {
             await api.post(`/api/user/addresses`, {
                 userId, type: "Billing",
                 fullName: billingSameAsShipping ? data.fullName : data.b_fullName,
-                mobile:   billingSameAsShipping ? data.mobile   : data.b_mobile,
-                address:  billingSameAsShipping ? data.address  : data.b_address,
-                street:   billingSameAsShipping ? data.street   : data.b_street,
-                city:     billingSameAsShipping ? data.city     : data.b_city,
-                state:    billingSameAsShipping ? data.state    : data.b_state,
-                zipCode:  billingSameAsShipping ? data.zipCode  : data.b_zipCode,
+                mobile: billingSameAsShipping ? data.mobile : data.b_mobile,
+                address: billingSameAsShipping ? data.address : data.b_address,
+                street: billingSameAsShipping ? data.street : data.b_street,
+                city: billingSameAsShipping ? data.city : data.b_city,
+                state: billingSameAsShipping ? data.state : data.b_state,
+                zipCode: billingSameAsShipping ? data.zipCode : data.b_zipCode,
             });
 
-            toast.success("Address saved successfully"); 
+            toast.success("Address saved successfully");
             reset();
             setIsAddingAddress(false);
             fetchAddresses();
@@ -94,21 +94,19 @@ function Address({ onContinueToPayment }) {
     return (
         <div className="lg:col-span-2 flex flex-col gap-5">
             <div
-                className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 ${
-                    step === 1
-                        ? "border-primary-blue/30 shadow-md ring-4 ring-primary-blue/5"
-                        : "border-gray-100 opacity-90"
-                }`}
+                className={`bg-white rounded-2xl shadow-sm border transition-all duration-300 ${step === 1
+                    ? "border-primary-blue/30 shadow-md ring-4 ring-primary-blue/5"
+                    : "border-gray-100 opacity-90"
+                    }`}
             >
                 {/* Header */}
                 <div className="p-5 sm:p-6 flex justify-between items-center border-b border-gray-50">
                     <div className="flex items-center gap-4">
                         <span
-                            className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors ${
-                                step >= 1
-                                    ? "bg-primary-blue text-white shadow-md shadow-primary-blue/20"
-                                    : "bg-gray-100 text-gray-400"
-                            }`}
+                            className={`flex items-center justify-center w-8 h-8 rounded-full text-sm font-bold transition-colors ${step >= 1
+                                ? "bg-primary-blue text-white shadow-md shadow-primary-blue/20"
+                                : "bg-gray-100 text-gray-400"
+                                }`}
                         >
                             1
                         </span>
@@ -209,85 +207,353 @@ function Address({ onContinueToPayment }) {
                                     )}
                                 </div>
 
+
                                 <form onSubmit={handleSubmit(onSubmitAddress)} className="space-y-8">
-                                    {/* Shipping fields */}
+
+                                    {/* SHIPPING ADDRESS */}
+
                                     <div>
+
                                         <h4 className="text-sm font-bold text-primary-blue uppercase tracking-wider mb-4 flex items-center gap-2">
+
                                             <FaMapMarkerAlt /> Shipping Address
+
                                         </h4>
+
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+
+                                            {/* FULL NAME */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Full Name *</label>
-                                                <input {...register("fullName", { required: true })} placeholder="John Doe" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    Full Name *
+
+                                                </label>
+
+                                                <input
+
+                                                    {...register("fullName", {
+
+                                                        required:
+                                                            "Full name is required",
+
+                                                        pattern: {
+
+                                                            value:
+                                                                /^[A-Za-z ]+$/,
+
+                                                            message:
+                                                                "Only letters allowed",
+                                                        },
+
+                                                        minLength: {
+
+                                                            value: 2,
+
+                                                            message:
+                                                                "Minimum 2 characters",
+                                                        },
+                                                    })}
+
+                                                    placeholder="John Doe"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.fullName && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.fullName.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* MOBILE */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Mobile Number *</label>
-                                                <input {...register("mobile", { required: true })} placeholder="10-digit number" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    Mobile Number *
+
+                                                </label>
+
+                                                <input
+
+                                                    type="text"
+
+                                                    maxLength={10}
+
+                                                    onInput={(e) => {
+
+                                                        e.target.value =
+                                                            e.target.value.replace(
+                                                                /[^0-9]/g,
+                                                                ""
+                                                            );
+                                                    }}
+
+                                                    {...register("mobile", {
+
+                                                        required:
+                                                            "Mobile number is required",
+
+                                                        pattern: {
+
+                                                            value:
+                                                                /^[0-9]{10}$/,
+
+                                                            message:
+                                                                "Mobile must be 10 digits",
+                                                        },
+                                                    })}
+
+                                                    placeholder="10-digit number"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.mobile && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.mobile.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* ADDRESS */}
+
                                             <div className="md:col-span-2">
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Complete Address *</label>
-                                                <input {...register("address", { required: true })} placeholder="House/Flat No., Building Name" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    Complete Address *
+
+                                                </label>
+
+                                                <input
+
+                                                    {...register("address", {
+
+                                                        required:
+                                                            "Address is required",
+
+                                                        minLength: {
+
+                                                            value: 5,
+
+                                                            message:
+                                                                "Address too short",
+                                                        },
+                                                    })}
+
+                                                    placeholder="House/Flat No., Building Name"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.address && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.address.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* STREET */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">Street / Area</label>
-                                                <input {...register("street")} placeholder="Street / Area Name" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    Street / Area
+
+                                                </label>
+
+                                                <input
+
+                                                    {...register("street", {
+
+                                                        required:
+                                                            "Street is required",
+                                                    })}
+
+                                                    placeholder="Street / Area Name"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.street && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.street.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* CITY */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">City *</label>
-                                                <input {...register("city", { required: true })} placeholder="City" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    City *
+
+                                                </label>
+
+                                                <input
+
+                                                    {...register("city", {
+
+                                                        required:
+                                                            "City is required",
+
+                                                        pattern: {
+
+                                                            value:
+                                                                /^[A-Za-z ]+$/,
+
+                                                            message:
+                                                                "Invalid city name",
+                                                        },
+                                                    })}
+
+                                                    placeholder="City"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.city && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.city.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* STATE */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">State *</label>
-                                                <input {...register("state", { required: true })} placeholder="State" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    State *
+
+                                                </label>
+
+                                                <input
+
+                                                    {...register("state", {
+
+                                                        required:
+                                                            "State is required",
+
+                                                        pattern: {
+
+                                                            value:
+                                                                /^[A-Za-z ]+$/,
+
+                                                            message:
+                                                                "Invalid state name",
+                                                        },
+                                                    })}
+
+                                                    placeholder="State"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.state && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.state.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
+                                            {/* PIN CODE */}
+
                                             <div>
-                                                <label className="block text-xs font-medium text-gray-500 mb-1">PIN Code *</label>
-                                                <input {...register("zipCode", { required: true })} placeholder="000000" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" />
+
+                                                <label className="block text-xs font-medium text-gray-500 mb-1">
+
+                                                    PIN Code *
+
+                                                </label>
+
+                                                <input
+
+                                                    type="text"
+
+                                                    maxLength={6}
+
+                                                    onInput={(e) => {
+
+                                                        e.target.value =
+                                                            e.target.value.replace(
+                                                                /[^0-9]/g,
+                                                                ""
+                                                            );
+                                                    }}
+
+                                                    {...register("zipCode", {
+
+                                                        required:
+                                                            "PIN code is required",
+
+                                                        pattern: {
+
+                                                            value:
+                                                                /^[0-9]{6}$/,
+
+                                                            message:
+                                                                "PIN code must be 6 digits",
+                                                        },
+                                                    })}
+
+                                                    placeholder="000000"
+
+                                                    className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition"
+                                                />
+
+                                                {errors.zipCode && (
+
+                                                    <p className="text-red-500 text-sm mt-1">
+
+                                                        {errors.zipCode.message}
+
+                                                    </p>
+                                                )}
+
                                             </div>
+
                                         </div>
+
                                     </div>
 
-                                    {/* Billing same as shipping toggle */}
-                                    <div className="flex items-center gap-3 bg-blue-50/50 p-4 rounded-xl border border-blue-100">
-                                        <input
-                                            type="checkbox"
-                                            id="formSameAsShipping"
-                                            checked={billingSameAsShipping}
-                                            onChange={(e) => setBillingSameAsShipping(e.target.checked)}
-                                            className="w-5 h-5 text-primary-blue rounded border-gray-300 focus:ring-primary-blue transition"
-                                        />
-                                        <label htmlFor="formSameAsShipping" className="text-gray-700 font-medium cursor-pointer select-none">
-                                            Billing address is the same as shipping address
-                                        </label>
-                                    </div>
-
-                                    {/* Separate billing fields */}
-                                    {!billingSameAsShipping && (
-                                        <div className="pt-6 border-t border-gray-100">
-                                            <h4 className="text-sm font-bold text-gray-700 uppercase tracking-wider mb-4 flex items-center gap-2">
-                                                <FaMapMarkerAlt className="text-gray-400" /> Billing Address
-                                            </h4>
-                                            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">Full Name *</label><input {...register("b_fullName", { required: !billingSameAsShipping })} placeholder="John Doe" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">Mobile Number *</label><input {...register("b_mobile", { required: !billingSameAsShipping })} placeholder="10-digit number" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div className="md:col-span-2"><label className="block text-xs font-medium text-gray-500 mb-1">Complete Address *</label><input {...register("b_address", { required: !billingSameAsShipping })} placeholder="House/Flat No., Building Name" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">Street / Area</label><input {...register("b_street")} placeholder="Street / Area Name" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">City *</label><input {...register("b_city", { required: !billingSameAsShipping })} placeholder="City" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">State *</label><input {...register("b_state", { required: !billingSameAsShipping })} placeholder="State" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                                <div><label className="block text-xs font-medium text-gray-500 mb-1">PIN Code *</label><input {...register("b_zipCode", { required: !billingSameAsShipping })} placeholder="000000" className="w-full px-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 outline-none transition" /></div>
-                                            </div>
-                                        </div>
-                                    )}
-
-                                    <div className="pt-6 border-t border-gray-100 flex justify-end">
-                                        <button
-                                            type="submit"
-                                            className="w-full md:w-auto px-8 py-3.5 bg-gradient-blue-red text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5"
-                                        >
-                                            Save Address
-                                        </button>
-                                    </div>
                                 </form>
+
+
                             </div>
                         )}
                     </div>
@@ -296,7 +562,7 @@ function Address({ onContinueToPayment }) {
                 {/* ── ADDRESS SUMMARY (step > 1) ── */}
                 {step > 1 && selectedShippingId && (() => {
                     const shippingAddr = getAddressById(selectedShippingId);
-                    const billingAddr  = getAddressById(selectedBillingId);
+                    const billingAddr = getAddressById(selectedBillingId);
                     if (!shippingAddr) return null;
                     const isSame = selectedShippingId === selectedBillingId;
 
