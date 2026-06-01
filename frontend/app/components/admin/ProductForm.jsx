@@ -16,8 +16,8 @@ import api, { BASE_URL } from "@/app/lib/axios";
 // ─── Constants ────────────────────────────────────────────────────────────────
 const IMAGE_MAX_KB   = 500;
 const IMAGE_MIN_KB   = 1;
-const IMAGE_MAX_W    = 4000;
-const IMAGE_MAX_H    = 4000;
+const IMAGE_MAX_W    = 1300;
+const IMAGE_MAX_H    = 1000;
 const ALLOWED_MIME   = ["image/jpeg", "image/png", "image/webp"];
 const ALLOWED_EXT_RE = /\.(jpe?g|png|webp)$/i;
 

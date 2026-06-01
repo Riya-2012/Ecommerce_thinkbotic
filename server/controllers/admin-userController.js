@@ -33,17 +33,217 @@ const getUserById = async (req,res,next) => {
 // *-------------------------
 //     Update Users Logic 
 // *-------------------------
-const updateUserById = async (req,res,next) => {
-    try {
-        const id =req.params.id;
-        const updateUserData = req.body;
-        const updatedData = await user.updateOne({_id:id},{ $set: updateUserData });
-        return res.status(200).json("User updated successfully");
+ updateUserById =
+async (req, res, next) => {
 
-    } catch (error) {
-        next(error);   
+  try {
+
+    const id =
+      req.params.id;
+
+    const {
+
+      username,
+
+      email,
+
+      phone,
+
+      firstname,
+
+      lastname,
+
+      gender,
+
+      isAdmin,
+
+    } = req.body;
+
+    // USERNAME REGEX
+
+    const usernameRegex =
+/^[A-Za-z0-9]+(?: [A-Za-z0-9]+)*$/;
+
+    // EMAIL REGEX
+
+    const emailRegex =
+/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    // REMOVE +91
+
+    const cleanPhone =
+phone.replace("+91", "").trim();
+
+    // PHONE REGEX
+
+    const phoneRegex =
+/^[0-9]{10}$/;
+
+    // USERNAME
+
+    if (
+
+!username ||
+
+!usernameRegex.test(
+username.trim()
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"Username should contain only letters and numbers",
+      });
     }
-}
+
+    // EMAIL
+
+    if (
+
+!email ||
+
+!emailRegex.test(
+email.trim()
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"Invalid email address",
+      });
+    }
+
+    // PHONE
+
+    if (
+
+!phoneRegex.test(
+cleanPhone
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"Phone number must be 10 digits",
+      });
+    }
+
+    // FIRST NAME
+
+    if (
+
+firstname &&
+
+!usernameRegex.test(
+firstname.trim()
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"First name should contain only letters and numbers",
+      });
+    }
+
+    // LAST NAME
+
+    if (
+
+lastname &&
+
+!usernameRegex.test(
+lastname.trim()
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"Last name should contain only letters and numbers",
+      });
+    }
+
+    // GENDER
+
+    const validGender =
+
+["Male", "Female", "Other"];
+
+    if (
+
+gender &&
+
+!validGender.includes(
+gender
+)
+
+    ) {
+
+      return res.status(400).json({
+
+        message:
+"Invalid gender selected",
+      });
+    }
+
+    // UPDATED DATA
+
+    const updateUserData = {
+
+      username:
+username.trim(),
+
+      email:
+email.trim(),
+
+      phone:
+`+91${cleanPhone}`,
+
+      firstname:
+firstname?.trim(),
+
+      lastname:
+lastname?.trim(),
+
+      gender,
+
+      isAdmin,
+    };
+
+    const updatedData =
+await user.updateOne(
+
+      { _id: id },
+
+      { $set: updateUserData }
+    );
+
+    return res.status(200).json({
+
+      success: true,
+
+      message:
+"User updated successfully",
+
+      data: updatedData,
+    });
+
+  } catch (error) {
+
+    next(error);
+  }
+};
+
+
 
 // *-------------------------
 //     deleteAllUsers Logic 

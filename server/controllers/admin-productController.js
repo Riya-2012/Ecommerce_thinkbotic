@@ -1,6 +1,13 @@
 const ProductPage = require("../models/productPage-model");
 const ProductInquiry = require("../models/ProductInquiry-model");
 
+const sharp =
+require("sharp");
+
+const fs =
+require("fs");
+
+
 // Add this at the top of your file
 function safeParse(str) {
     try {
@@ -198,6 +205,119 @@ const createProductPage = async (req, res, next) => {
 
     // ── MAIN IMAGE ────────────────────────────────────────────────────────
     if (!req.files?.img && !req.body.imgPath) {
+       
+// MAIN IMAGE VALIDATION
+
+if (
+req.files?.img?.[0]
+) {
+
+  const file =
+req.files.img[0];
+
+  // FILE TYPE
+
+  const allowedTypes = [
+
+    "image/jpeg",
+
+    "image/jpg",
+
+    "image/png",
+
+    "image/webp",
+  ];
+
+  if (
+
+!allowedTypes.includes(
+file.mimetype
+)
+
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Only JPG, PNG and WEBP allowed",
+    });
+  }
+
+  // FILE SIZE
+
+  const maxSize =
+5 * 1024 * 1024;
+
+  if (
+file.size > maxSize
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Image size must be under 5MB",
+    });
+  }
+
+  // IMAGE DIMENSIONS
+
+  const metadata =
+
+await sharp(file.path)
+.metadata();
+
+  // WIDTH
+
+  if (
+metadata.width < 1300
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Image width must be at least 1300px",
+    });
+  }
+
+  // HEIGHT
+
+  if (
+metadata.height < 1000
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Image height must be at least 100px",
+    });
+  }
+    }
+
+
       return res.status(400).json({ success: false, message: "Main image is required" });
     }
 
@@ -241,6 +361,112 @@ const createProductPage = async (req, res, next) => {
     let images = [];
 
     if (req.body.colorNames && req.files?.colorImages) {
+    
+// COLOR IMAGE VALIDATION
+
+for (
+const file of req.files.colorImages
+) {
+
+  // FILE TYPE
+
+  const allowedTypes = [
+
+    "image/jpeg",
+
+    "image/jpg",
+
+    "image/png",
+
+    "image/webp",
+  ];
+
+  if (
+
+!allowedTypes.includes(
+file.mimetype
+)
+
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Only JPG, PNG and WEBP allowed",
+    });
+  }
+
+  // FILE SIZE
+
+  const maxSize =
+5 * 1024 * 1024;
+
+  if (
+file.size > maxSize
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Color image size must be under 5MB",
+    });
+  }
+
+  // DIMENSIONS
+
+  const metadata =
+
+await sharp(file.path)
+.metadata();
+
+  if (
+metadata.width < 500
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Color image width must be at least 500px",
+    });
+  }
+
+  if (
+metadata.height < 500
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+"Color image height must be at least 500px",
+    });
+  }
+}
+
+
       const colorNames = Array.isArray(req.body.colorNames)
         ? req.body.colorNames
         : [req.body.colorNames];
@@ -339,6 +565,7 @@ const updateProductPageById = async (req, res, next) => {
 
         // Main image
         if (req.files && req.files.img && req.files.img[0]) {
+
             updateData.img = `uploads/${req.files.img[0].filename}`;
         } else if (req.body.imgPath && !req.files?.img) {
             updateData.img = req.body.imgPath;

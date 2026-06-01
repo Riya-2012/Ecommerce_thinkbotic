@@ -1,136 +1,76 @@
+
 "use client";
 
-import { useState } from "react";
+import {
 
-import api from "@/app/lib/axios";
+  useEffect,
 
-import { useRouter }
-from "next/navigation";
+  useState
 
-import toast from "react-hot-toast";
+} from "react";
+
+import Link from "next/link";
 
 import Image from "next/image";
 
+import api, {
+
+  BASE_URL
+
+} from "@/app/lib/axios";
+
+import toast from "react-hot-toast";
+
 import {
-  FaImage,
-  FaSave,
+
+  FaPlus,
+
+  FaEdit,
+
+  FaTrash
+
 } from "react-icons/fa";
 
-const AdminAddLogo = () => {
-
-  const [label, setLabel] =
-    useState("LOGO");
-
-  const [path, setPath] =
-    useState("/");
+export default function Page() {
 
   const [logo, setLogo] =
     useState(null);
 
-  const [preview, setPreview] =
-    useState("");
-
   const [loading, setLoading] =
-    useState(false);
+    useState(true);
 
-  const router = useRouter();
+  // FETCH LOGO
 
-  // IMAGE CHANGE
 
-  const handleLogoChange = (
-    e
-  ) => {
-
-    const file =
-      e.target.files[0];
-
-    if (file) {
-
-      setLogo(file);
-
-      setPreview(
-        URL.createObjectURL(
-          file
-        )
-      );
-    }
-  };
-
-  // SUBMIT
-
-  const handleSubmit = async (
-    e
-  ) => {
-
-    e.preventDefault();
-
-    if (!logo) {
-
-      toast.error(
-        "Logo image is required"
-      );
-
-      return;
-    }
+const fetchLogo =
+  async () => {
 
     try {
 
-      setLoading(true);
+      const response =
+        await api.get(
+          "/api/admin/navbar"
+        );
 
-      const formData =
-        new FormData();
+      // GET ONLY LOGO
 
-      formData.append(
-        "label",
-        label
-      );
+      const logoData =
 
-      formData.append(
-        "path",
-        path
-      );
+        response.data.Navbars.find(
 
-      formData.append(
-        "img",
-        logo
-      );
+          (item) =>
 
-      await api.post(
+            item.label ===
+            "LOGO"
+        );
 
-        `api/admin/navbar/logo`,
-
-        formData,
-
-        {
-          headers: {
-
-            "Content-Type":
-              "multipart/form-data",
-          },
-        }
-      );
-
-      toast.success(
-        "Logo added successfully"
-      );
-
-      setLabel("LOGO");
-
-      setPath("/");
-
-      setLogo(null);
-
-      router.push(
-        "/admin/logo"
+      setLogo(
+        logoData || null
       );
 
     } catch (error) {
 
-      console.error(error);
-
-      toast.error(
-        "Something went wrong"
-      );
+      console.log(error);
 
     } finally {
 
@@ -138,175 +78,181 @@ const AdminAddLogo = () => {
     }
   };
 
+
+
+  // DELETE LOGO
+
+  const handleDelete =
+    async (id) => {
+
+      try {
+
+        await api.delete(
+
+          `/api/admin/navbar/${id}/logo`
+        );
+
+        toast.success(
+          "Logo deleted"
+        );
+
+        setLogo(null);
+
+      } catch (error) {
+
+        console.log(error);
+
+        toast.error(
+          "Delete failed"
+        );
+      }
+    };
+
+  useEffect(() => {
+
+    fetchLogo();
+
+  }, []);
+
+  if (loading) {
+
+    return (
+
+      <div className="p-10">
+
+        Loading...
+
+      </div>
+    );
+  }
+
   return (
 
-    <div className="max-w-3xl mx-auto">
+    <div className="max-w-4xl mx-auto">
 
       {/* HEADER */}
 
-      <div className="mb-8">
+      <div className="flex items-center justify-between mb-8">
 
-        <h1 className="text-3xl font-bold text-[#0f172a]">
+        <div>
 
-          Add Website Logo
+          <h1 className="text-3xl font-bold text-[#0f172a]">
 
-        </h1>
+            Website Logo
+
+          </h1>
+
+        </div>
+
+        {!logo && (
+
+          <Link
+            href="/admin/logo/add"
+            className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-gradient-blue-red text-white font-semibold"
+          >
+
+            <FaPlus />
+
+            Add Logo
+
+          </Link>
+        )}
 
       </div>
 
-      {/* FORM */}
+      {/* NO LOGO */}
 
-      <form
-        onSubmit={handleSubmit}
-        className="bg-white rounded-md border border-gray-100 shadow-sm overflow-hidden"
-      >
+      {!logo ? (
 
-        {/* TOP */}
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm p-20 text-center">
 
-        {/* <div className="bg-gradient-blue-red px-8 py-10 text-white">
+          <h2 className="text-2xl font-bold text-[#0f172a]">
 
-          <h2 className="text-2xl font-bold">
-
-            Logo Settings
+            No Logo Added
 
           </h2>
 
-          <p className="text-white/80 mt-2">
+        </div>
 
-            Configure navbar logo
+      ) : (
 
-          </p>
-
-        </div> */}
-
-        {/* BODY */}
-
-        <div className="p-8 space-y-7">
-
-          {/* LABEL */}
-
-          <div>
-
-            <label className="text-sm font-semibold text-gray-700">
-
-              Label
-
-            </label>
-
-            <input
-              type="text"
-              value={label}
-              disabled
-              
-              className="w-full mt-3 border border-gray-200 rounded-2xl px-5 py-4 bg-gray-100 outline-none"
-            />
-
-          </div>
-
-          {/* PATH */}
-
-          <div>
-
-            <label className="text-sm font-semibold text-gray-700">
-              Redirect Path
-            </label>
-
-            <input
-              type="text"
-              value={path}
-              onChange={(e) =>
-                setPath(
-                  e.target.value
-                )
-              }
-              placeholder="/"
-              className="w-full mt-3 border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition"
-            />
-
-          </div>
+        <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 
           {/* IMAGE */}
 
-          <div>
+          <div className="relative h-[200px] bg-gray-50">
 
-            <label className="text-sm font-semibold text-gray-700">
 
-              Logo Image
 
-            </label>
+<Image
+  src={`${BASE_URL}/uploads/${logo.logo}`}
+  alt="Logo"
+  fill
+  unoptimized
+  className="object-contain"
+/>
 
-            <div className="mt-4 border-2 border-dashed border-gray-300 rounded-3xl bg-gray-50 p-8 text-center">
 
-              {preview ? (
 
-                <div className="relative w-full h-[220px] rounded-2xl overflow-hidden">
 
-                  <Image
-                    src={preview}
-                    alt="Logo Preview"
-                    fill
-                    unoptimized
-                    className="object-contain"
-                  />
 
-                </div>
+          </div>
 
-              ) : (
+          {/* INFO */}
 
-                <div>
+          <div className="p-8">
 
-                  <FaImage className="mx-auto text-5xl text-gray-400 mb-5" />
+            <h2 className="text-2xl font-bold text-[#0f172a]">
 
-                  <p className="text-gray-500">
+              {logo.label}
 
-                    Upload website logo
+            </h2>
 
-                  </p>
+            <p className="text-gray-500 mt-2">
 
-                </div>
+              Redirect:
+              {logo.path}
 
-              )}
+            </p>
 
-              <input
-                type="file"
-                accept="image/*"
-                onChange={
-                  handleLogoChange
+            {/* ACTIONS */}
+
+            <div className="flex gap-4 mt-8">
+
+              <Link
+                href={`/admin/logo/edit/${logo._id}`}
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-blue-100 text-blue-700 font-semibold"
+              >
+
+                <FaEdit />
+
+                Edit
+
+              </Link>
+
+              <button
+                onClick={() =>
+                  handleDelete(
+                    logo._id
+                  )
                 }
-                className="mt-6"
-                required
-              />
+                className="flex items-center gap-2 px-6 py-3 rounded-2xl bg-red-100 text-red-600 font-semibold"
+              >
+
+                <FaTrash />
+
+                Delete
+
+              </button>
 
             </div>
 
           </div>
 
         </div>
-
-        {/* FOOTER */}
-
-        <div className="border-t border-gray-100 p-6 flex justify-end">
-
-          <button
-            type="submit"
-            disabled={loading}
-            className="flex items-center gap-3 px-8 py-4 rounded-2xl bg-gradient-blue-red text-white font-semibold shadow-lg hover:opacity-90 transition disabled:opacity-50"
-          >
-
-            <FaSave />
-
-            {loading
-              ? "Saving..."
-              : "Save Logo"}
-
-          </button>
-
-        </div>
-
-      </form>
+      )}
 
     </div>
   );
-};
+}
 
-export default AdminAddLogo;
