@@ -9,6 +9,7 @@ import api from '../lib/axios';
 import { useAuth } from '../context/AuthContext';
 import toast from 'react-hot-toast';
 import { load } from '@cashfreepayments/cashfree-js';
+import OrderSummary from '../components/OrderSummary';
 
 export default function CheckoutPage() {
     const { user } = useAuth();
@@ -225,56 +226,7 @@ billingAddr
                 </div>
 
                 {/* RIGHT SIDE: ORDER SUMMARY */}
-                <div className="p-6 bg-white border border-gray-100 shadow-sm rounded-2xl h-fit sticky top-24">
-                    <h2 className="text-xl font-bold mb-4 border-b border-gray-100 pb-4">
-                        Order Summary
-                    </h2>
-
-                    <div className="space-y-4 mb-6 max-h-[300px] overflow-y-auto pr-2 custom-scrollbar">
-                        {cart.length === 0 ? (
-                            <p className="text-gray-500 text-sm">Your cart is empty.</p>
-                        ) : (
-                            cart.map(item => {
-                                if (!item) return null;
-                                return (
-                                    <div key={item?.productId || item?._id || Math.random()} className="flex gap-4">
-                                        <div className="flex-grow flex flex-col justify-center">
-                                            <h4 className="text-sm font-semibold text-gray-800 line-clamp-2">{item?.name || item?.title || "Product"}</h4>
-                                            <div className="flex justify-between items-center text-sm mt-1">
-                                                <span className="text-gray-500">Qty: {item?.quantity || item?.qty || 1}</span>
-                                                <span className="font-bold text-gray-900">₹{item?.price || 0}</span>
-                                            </div>
-                                        </div>
-                                    </div>
-                                );
-                            })
-                        )}
-                    </div>
-
-                    <div className="border-t my-4"></div>
-
-                    <div className="flex justify-between text-gray-600 mb-2 text-sm">
-                        <span>Cart Total</span>
-                        <span>₹{subtotal}</span>
-                    </div>
-                    {discount > 0 && (
-                        <div className="flex justify-between text-green-600 mb-2 text-sm">
-                            <span>Discount</span>
-                            <span>-₹{discount}</span>
-                        </div>
-                    )}
-                    <div className="flex justify-between text-gray-600 mb-2 text-sm">
-                        <span>Shipping</span>
-                        <span>{shipping === 0 ? <span className="text-green-600 font-semibold">FREE</span> : `₹${shipping}`}</span>
-                    </div>
-
-                    <div className="border-t my-4"></div>
-
-                    <div className="flex justify-between font-bold text-lg">
-                        <span className='text-gray-900'>Total</span>
-                        <span className='text-primary-red'>₹{total}</span>
-                    </div>
-                </div>
+             <OrderSummary />
             </div>
         </div>
     );

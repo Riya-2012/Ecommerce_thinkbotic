@@ -8,6 +8,7 @@ import api, { BASE_URL } from '../lib/axios';
 import { useRouter } from 'next/navigation';
 import { useCart }
 from "../context/CartContext";
+import OrderSummary from '../components/OrderSummary';
 function page() {
     const [cart, setCart] = useState([]);
  const [qty, setQty] = useState(1);
@@ -215,12 +216,23 @@ cartItems.length >0 ? (
       </div>
     ))}
 
+
+    <Link href="/delivery">
+
+        <button className="w-full mt-4 bg-gradient-blue-red text-white py-2 rounded-md font-bold hover:opacity-90 transition">
+
+          Proceed To Checkout
+
+        </button>
+
+      </Link>
   </div>
 
+  
   {/* RIGHT SIDE */}
 
 
-
+{/* 
 <div className=" p-2 rounded-2xl   h-fit sticky top-24">
 
     <h2 className="text-xl font-bold mb-4">
@@ -287,10 +299,10 @@ const discount=oldPriceTotal-subtotal;
       );
     })()}
 
-  </div>
+  </div> */}
 
 
-    
+    <OrderSummary  />
 
 
 </div>

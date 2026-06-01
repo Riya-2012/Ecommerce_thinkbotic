@@ -1,6 +1,173 @@
 const Banner = require("../models/banner-model");
 
+const sharp =
+require("sharp");
+
+const fs =
+require("fs");
+
+
 // ADD BANNER
+
+const validateBannerImage =
+async (file) => {
+
+  if (!file) {
+
+    return {
+      success: false,
+      message:
+"Banner image is required",
+    };
+  }
+
+  // FILE TYPE
+
+  const allowedTypes = [
+
+    "image/jpeg",
+
+    "image/jpg",
+
+    "image/png",
+
+    "image/webp",
+  ];
+
+  if (
+
+!allowedTypes.includes(
+file.mimetype
+)
+
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return {
+
+      success: false,
+
+      message:
+"Only JPG, PNG and WEBP allowed",
+    };
+  }
+
+  // FILE SIZE
+
+  const maxSize =
+2 * 1024 * 1024;
+
+  if (
+file.size > maxSize
+  ) {
+
+    fs.unlinkSync(
+file.path
+    );
+
+    return {
+
+      success: false,
+
+      message:
+"Image size must be under 2MB",
+    };
+  }
+
+  // IMAGE DIMENSIONS
+
+  const metadata =
+
+await sharp(file.path)
+.metadata();
+
+
+// MIN WIDTH
+
+if (
+  metadata.width < 400
+) {
+
+  fs.unlinkSync(
+    file.path
+  );
+
+  return {
+
+    success: false,
+
+    message:
+      "Image width must be at least 800px",
+  };
+}
+
+// MAX WIDTH
+
+if (
+  metadata.width > 1200
+) {
+
+  fs.unlinkSync(
+    file.path
+  );
+
+  return {
+
+    success: false,
+
+    message:
+      "Image width must not exceed 1200px",
+  };
+}
+
+// MIN HEIGHT
+
+if (
+  metadata.height < 400
+) {
+
+  fs.unlinkSync(
+    file.path
+  );
+
+  return {
+
+    success: false,
+
+    message:
+      "Image height must be at least 400px",
+  };
+}
+
+// MAX HEIGHT
+
+if (
+  metadata.height > 800
+) {
+
+  fs.unlinkSync(
+    file.path
+  );
+
+  return {
+
+    success: false,
+
+    message:
+      "Image height must not exceed 800px",
+  };
+}
+
+
+
+  return {
+    success: true,
+  };
+};
+
 
 exports.addBanner =
 async (req, res) => {
@@ -18,6 +185,28 @@ async (req, res) => {
       priceText,
 
     } = req.body;
+
+// IMAGE VALIDATION
+
+const validation =
+
+await validateBannerImage(
+req.file
+);
+
+if (
+!validation.success
+) {
+
+  return res.status(400).json({
+
+    success: false,
+
+    message:
+validation.message,
+  });
+}
+
 
     const banner =
       new Banner({
@@ -166,11 +355,30 @@ async (req, res) => {
     banner.priceText =
       req.body.priceText;
 
-    if (req.file) {
 
-      banner.img =
-        req.file.filename;
-    }
+if (req.file) {
+
+  const validation =
+
+await validateBannerImage(
+req.file
+  );
+
+  if (
+!validation.success
+  ) {
+
+    return res.status(400).json({
+
+      success: false,
+
+      message:
+validation.message,
+    });
+  }
+}
+
+
 
     await banner.save();
 

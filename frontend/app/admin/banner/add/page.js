@@ -20,15 +20,15 @@ export default function AdminBannerPage() {
     useRouter();
 
   const [loading,
-  setLoading] =
+    setLoading] =
     useState(false);
 
   const [preview,
-  setPreview] =
+    setPreview] =
     useState("");
 
   const [formData,
-  setFormData] =
+    setFormData] =
     useState({
 
       type: "main",
@@ -72,6 +72,7 @@ export default function AdminBannerPage() {
 
   // HANDLE IMAGE
 
+
   const handleImage =
     (e) => {
 
@@ -80,20 +81,144 @@ export default function AdminBannerPage() {
 
       if (!file) return;
 
-      setFormData({
+      // FILE SIZE
 
-        ...formData,
+      const maxSize =
+        2 * 1024 * 1024;
 
-        img: file,
+      if (
+        file.size > maxSize
+      ) {
 
-      });
+        toast.error(
+          "Image size must be under 2MB"
+        );
 
-      setPreview(
+        return;
+      }
+
+      // FILE TYPE
+
+      const allowedTypes = [
+
+        "image/jpeg",
+
+        "image/jpg",
+
+        "image/png",
+
+        "image/webp",
+      ];
+
+      if (
+
+        !allowedTypes.includes(
+          file.type
+        )
+
+      ) {
+
+        toast.error(
+          "Only JPG, PNG and WEBP allowed"
+        );
+
+        return;
+      }
+
+      // IMAGE DIMENSION
+
+      const image =
+        new window.Image();
+
+      const objectUrl =
         URL.createObjectURL(
           file
-        )
-      );
+        );
+
+      image.onload = () => {
+
+        // MIN WIDTH
+
+
+
+if (
+  image.width < 400
+) {
+
+  toast.error(
+    "Image width must be at least 400px"
+  );
+
+  return;
+}
+
+// MAX WIDTH
+
+if (
+  image.width > 1200
+) {
+
+  toast.error(
+    "Image width must not exceed 1200px"
+  );
+
+  return;
+}
+
+// MIN HEIGHT
+
+if (
+  image.height < 400
+) {
+
+  toast.error(
+    "Image height must be at least 400px"
+  );
+
+  return;
+}
+
+// MAX HEIGHT
+
+if (
+  image.height > 800
+) {
+
+  toast.error(
+    "Image height must not exceed 800px"
+  );
+
+  return;
+}
+
+
+          
+        
+
+        setFormData({
+
+          ...formData,
+
+          img: file,
+        });
+
+        setPreview(
+          objectUrl
+        );
+      };
+
+      image.onerror = () => {
+
+        toast.error(
+          "Invalid image file"
+        );
+      };
+
+      image.src =
+        objectUrl;
     };
+
+
 
   // SUBMIT
 
@@ -227,13 +352,13 @@ export default function AdminBannerPage() {
                   Side banner 1
 
                 </option>
-                
+
                 <option value="side2">
 
                   Side banner 2
 
                 </option>
-                  <option value="trbanner">
+                <option value="trbanner">
 
                   trbanner
 
