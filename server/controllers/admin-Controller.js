@@ -5,6 +5,7 @@ const ProductPage = require("../models/productPage-model");
 const Order = require("../models/order-model");
 const path = require("path");
 const fs = require("fs");
+const sharp = require("sharp");
 
 // Generic function for fetching all records
 const getAll = (Model, modelName) => async (req, res, next) => {
@@ -207,17 +208,125 @@ const create = (Model, modelName) => async (req, res, next) => {
         img,
       });
     }
-    if (modelName.toLowerCase() === "category") {
-      if (!category || !img) {
-        console.error("Missing fields:", { category, img }); // Add this line
-        return res
-          .status(400)
-          .json({
-            msg: "All fields (category, img) are required for category page",
-          });
-      }
-      newData = new Model({ category, img });
-    } else if (modelName.toLowerCase() === "banner") {
+  
+if (
+modelName.toLowerCase() ===
+"category"
+) {
+
+  if (
+!category || !img
+  ) {
+
+    return res.status(400).json({
+
+      msg:
+"All fields (category, img) are required for category page",
+    });
+  }
+
+  // IMAGE VALIDATION
+
+  if (req.file) {
+
+    // ALLOWED TYPES
+
+    const allowedTypes = [
+
+      "image/jpeg",
+
+      "image/jpg",
+
+      "image/png",
+
+      "image/webp",
+    ];
+
+    // FILE TYPE
+
+    if (
+
+!allowedTypes.includes(
+req.file.mimetype
+)
+
+    ) {
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+
+        msg:
+"Only JPG, PNG and WEBP images allowed",
+      });
+    }
+
+    // FILE SIZE
+
+    const maxSize =
+500 * 1024;
+
+    if (
+req.file.size > maxSize
+    ) {
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+
+        msg:
+"Image size must be under 500KB",
+      });
+    }
+
+    // IMAGE DIMENSIONS
+
+    const metadata =
+
+await sharp(req.file.path)
+.metadata();
+
+    // EXACT WIDTH
+
+    if (
+metadata.width !== 100
+    ) {
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+
+        msg:
+"Image width must be exactly 100px",
+      });
+    }
+
+    // EXACT HEIGHT
+
+    if (
+metadata.height !== 100
+    ) {
+
+      fs.unlinkSync(req.file.path);
+
+      return res.status(400).json({
+
+        msg:
+"Image height must be exactly 100px",
+      });
+    }
+  }
+
+  newData =
+new Model({
+
+    category,
+
+    img,
+  });
+}
+
+ else if (modelName.toLowerCase() === "banner") {
       if (!name || !img) {
         return res.status(400).json({ msg: "Name and image are required" });
       }

@@ -101,46 +101,204 @@ export default function Page() {
 
   // UPDATE USER
 
-  const handleSubmit = async (
-    e
-  ) => {
 
-    e.preventDefault();
 
-    try {
 
-      setUpdating(true);
+const handleSubmit = async (
+  e
+) => {
 
-      await api.put(
+  e.preventDefault();
 
-        `/api/admin/users/update/${id}`,
+  try {
 
-        formData
+    // USERNAME REGEX
 
-      );
+    const usernameRegex = /^[A-Za-z0-9]+(?: [A-Za-z0-9]+)*$/
 
-      toast.success(
-        "User updated successfully"
-      );
 
-      router.push(
-        "/admin/user"
-      );
 
-    } catch (error) {
+    // TRIM VALUES
 
-      console.log(error);
+    const username =
+      formData.username.trim();
+
+    const firstname =
+      formData.firstname.trim();
+
+    const lastname =
+      formData.lastname.trim();
+
+    const email =
+      formData.email.trim();
+
+    const phone =
+formData.phone
+
+.replace("+91", "")
+
+.trim();
+
+
+
+    // USERNAME VALIDATION
+
+    if (
+      !usernameRegex.test(
+        username
+      )
+    ) {
 
       toast.error(
-        "Update failed"
+        "Username should contain only letters"
       );
 
-    } finally {
-
-      setUpdating(false);
-
+      return;
     }
-  };
+
+    if (
+      username.length < 2
+    ) {
+
+      toast.error(
+        "Username must be at least 2 characters"
+      );
+
+      return;
+    }
+
+    // EMAIL VALIDATION
+
+    const emailRegex =
+      /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+    if (
+      !emailRegex.test(
+        email
+      )
+    ) {
+
+      toast.error(
+        "Invalid email address"
+      );
+
+      return;
+    }
+
+    // PHONE VALIDATION
+
+    const phoneRegex =
+      /^[0-9]{10}$/;
+
+    if (
+      !phoneRegex.test(
+        phone
+      )
+    ) {
+
+      toast.error(
+        "Phone number must be 10 digits"
+      );
+
+      return;
+    }
+
+    // FIRST NAME
+
+    if (
+      firstname &&
+      !usernameRegex.test(
+        firstname
+      )
+    ) {
+
+      toast.error(
+        "First name should contain only letters"
+      );
+
+      return;
+    }
+
+    // LAST NAME
+
+    if (
+      lastname &&
+      !usernameRegex.test(
+        lastname
+      )
+    ) {
+
+      toast.error(
+        "Last name should contain only letters"
+      );
+
+      return;
+    }
+
+    // GENDER
+
+    if (
+      !formData.gender
+    ) {
+
+      toast.error(
+        "Please select gender"
+      );
+
+      return;
+    }
+
+    setUpdating(true);
+
+    // UPDATED DATA
+
+    const updatedData = {
+
+      ...formData,
+
+      username,
+
+      firstname,
+
+      lastname,
+
+      email,
+
+      phone,
+    };
+
+    await api.put(
+
+      `/api/admin/users/update/${id}`,
+
+      updatedData
+    );
+
+    toast.success(
+      "User updated successfully"
+    );
+
+    router.push(
+      "/admin/user"
+    );
+
+  } catch (error) {
+
+    console.log(error);
+
+    toast.error(
+
+      error.response?.data?.message ||
+
+      "Update failed"
+    );
+
+  } finally {
+
+    setUpdating(false);
+  }
+};
+
 
   useEffect(() => {
 
@@ -490,7 +648,7 @@ export default function Page() {
               type="button"
               onClick={() =>
                 router.push(
-                  "/admin/users"
+                  "/admin/user"
                 )
               }
               className="px-8 py-4 rounded-2xl bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition"

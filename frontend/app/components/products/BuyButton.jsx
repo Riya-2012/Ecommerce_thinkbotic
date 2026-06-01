@@ -15,11 +15,8 @@ import toast from "react-hot-toast";
 
 
 function BuyNow({
-
   product,
-
   qty = 1,
-
   selectedColor,
   className=""
 

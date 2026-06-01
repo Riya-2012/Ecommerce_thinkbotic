@@ -60,7 +60,7 @@ export default function CategoryProducts() {
 
       <div className="max-w-[1400px] mx-auto">
 
-        {/* 🔥 HEADER */}
+        {/*  HEADER */}
         <div className="flex items-center justify-between mb-8">
 
           <div>

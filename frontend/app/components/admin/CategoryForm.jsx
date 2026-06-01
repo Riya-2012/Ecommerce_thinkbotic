@@ -73,12 +73,16 @@ export default function CategoryForm({
 
     ) {
 
+
       reset({
 
         category:
-          initialData.category,
+          initialData.category || "",
 
+        img: "",
       });
+
+
 
       setPreview(
         `${BASE_URL}/${initialData.img}`
@@ -148,16 +152,16 @@ export default function CategoryForm({
       // ADD CATEGORY
 
       if (mode === "add") {
-await api.post(
-  "/api/admin/landingpage/categories",
-  formData,
-  {
-    headers: {
-      "Content-Type":
-        "multipart/form-data",
-    },
-  }
-);
+        await api.post(
+          "/api/admin/landingpage/categories",
+          formData,
+          {
+            headers: {
+              "Content-Type":
+                "multipart/form-data",
+            },
+          }
+        );
         toast.success(
           "Category added"
         );
@@ -167,13 +171,23 @@ await api.post(
 
       else {
 
-        await api.put(
+  
+await api.put(
 
-          `/api/admin/landingpage/category/${initialData._id}`,
+  `/api/admin/landingpage/category/${initialData._id}`,
 
-          formData
+  formData,
 
-        );
+  {
+
+    headers: {
+
+      "Content-Type":
+        "multipart/form-data",
+    },
+  }
+);
+
 
         toast.success(
           "Category updated"
@@ -198,50 +212,50 @@ await api.post(
 
     }
   };
-const [categories,
-setCategories] =
-useState([]);
-useEffect(() => {
+  const [categories,
+    setCategories] =
+    useState([]);
+  useEffect(() => {
 
-  const fetchCategories =
-    async () => {
+    const fetchCategories =
+      async () => {
 
-      try {
+        try {
 
-        const response =
-          await api.get(
-            "/api/comman/products"
+          const response =
+            await api.get(
+              "/api/comman/products"
+            );
+
+          const products =
+            response.data.data || [];
+
+          // UNIQUE CATEGORY LIST
+
+          const uniqueCategories =
+            [...new Set(
+
+              products.map(
+                (item) =>
+                  item.category
+              )
+
+            )];
+
+          setCategories(
+            uniqueCategories
           );
 
-        const products =
-          response.data.data || [];
+        } catch (error) {
 
-        // UNIQUE CATEGORY LIST
+          console.log(error);
 
-        const uniqueCategories =
-          [...new Set(
+        }
+      };
 
-            products.map(
-              (item) =>
-                item.category
-            )
+    fetchCategories();
 
-          )];
-
-        setCategories(
-          uniqueCategories
-        );
-
-      } catch (error) {
-
-        console.log(error);
-
-      }
-    };
-
-  fetchCategories();
-
-}, []);
+  }, []);
   return (
 
     <div className="max-w-4xl mx-auto">
@@ -330,38 +344,38 @@ useEffect(() => {
 
             </label>
 
-        <select
+            <select
 
-  {...register(
-    "category",
-    {
-      required:
-        "Category is required",
-    }
-  )}
+              {...register(
+                "category",
+                {
+                  required:
+                    "Category is required",
+                }
+              )}
 
-  className="w-full mt-3 border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition"
+              className="w-full mt-3 border border-gray-200 rounded-2xl px-5 py-4 outline-none focus:border-primary-blue focus:ring-2 focus:ring-primary-blue/20 transition"
 
->
+            >
 
-  <option value="">
-    Select Category
-  </option>
+              <option value="">
+                Select Category
+              </option>
 
-  {categories.map((item) => (
+              {categories.map((item) => (
 
-    <option
-      key={item}
-      value={item}
-    >
+                <option
+                  key={item}
+                  value={item}
+                >
 
-      {item}
+                  {item}
 
-    </option>
+                </option>
 
-  ))}
+              ))}
 
-</select>
+            </select>
             {errors.category && (
 
               <p className="text-red-500 text-sm mt-2">
@@ -412,19 +426,133 @@ useEffect(() => {
                   <p className="text-gray-500 mb-4">
 
                     Upload category image
-                    
-                    </p>
-                  
+
+                  </p>
+
                 </div>
 
               )}
-<input
-  type="file"
-  {...register("img", {
-    required:
-      mode === "add"
-  })}
-/>
+
+              <input
+
+                type="file"
+
+                accept="image/*"
+
+                {...register("img", {
+
+                  required:
+                    mode === "add"
+
+                      ? "Category image is required"
+
+                      : false,
+
+                  validate: async (files) => {
+
+                    // NO FILE
+
+                    if (!files || !files[0]) {
+
+                      return true;
+                    }
+
+                    const file = files[0];
+
+                    // FILE SIZE
+
+                    const maxSize =
+                      500 * 1024;
+
+                    if (
+                      file.size > maxSize
+                    ) {
+
+                      return "Image size must be under 500KB";
+                    }
+
+                    // FILE TYPE
+
+                    const allowedTypes = [
+
+                      "image/jpeg",
+
+                      "image/jpg",
+
+                      "image/png",
+
+                      "image/webp",
+                    ];
+
+                    if (
+                      !allowedTypes.includes(file.type)
+                    ) {
+
+                      return "Only JPG, PNG and WEBP allowed";
+                    }
+
+                    // IMAGE DIMENSIONS
+
+                    const image =
+                      new window.Image();
+
+                    const objectUrl =
+                      URL.createObjectURL(file);
+
+                    return new Promise((resolve) => {
+
+                      image.onload = () => {
+
+                        URL.revokeObjectURL(objectUrl);
+
+                        // WIDTH
+
+                        if (image.width !== 100) {
+
+                          resolve(
+                            "Image width must be at least 50px"
+                          );
+
+                          return;
+                        }
+
+                        // HEIGHT
+
+                        if (image.height !== 100) {
+
+                          resolve(
+                            "Image height must be at least 40px"
+                          );
+
+                          return;
+                        }
+
+                        resolve(true);
+                      };
+
+                      image.onerror = () => {
+
+                        resolve(
+                          "Invalid image file"
+                        );
+                      };
+
+                      image.src = objectUrl;
+                    });
+                  },
+                })}
+              />
+
+              {errors.img && (
+
+                <p className="text-red-500 text-sm mt-2">
+
+                  {errors.img.message}
+
+                </p>
+              )}
+
+
 
             </div>
 
@@ -450,9 +578,9 @@ useEffect(() => {
 
               : mode === "edit"
 
-              ? "Update Category"
+                ? "Update Category"
 
-              : "Save Category"}
+                : "Save Category"}
 
           </button>
 
