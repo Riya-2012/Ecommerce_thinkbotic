@@ -210,70 +210,147 @@ export default function Page() {
               </div>
 
               {/* review */}
- 
-
- {order.deliveredAt && (
-
-<Review
-
-productId={
-item?.productId?._id
-}
-
-/>
 
 
- )
-}
+              {order.deliveredAt && (
 
-   
+                <Review
 
+                  productId={
+                    item?.productId?._id
+                  }
 
+                />
+
+              )
+              }
 
             </div>
-         
-          </div>
-        </div>
-      
 
-      {/* RIGHT */}
-      <div className="space-y-4">
-
-        {/* SHIPPING */}
-        <div className="bg-white border border-gray-100 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-primary-blue">Shipping Address</h2>
-          <div className="space-y-2 mt-3">
-            <h3 className="font-semibold text-lg text-[#0f172a]">{order?.shippingAddress?.fullName}</h3>
-            <p className="text-gray-600">Phone : {order?.shippingAddress?.mobile}</p>
-            <p className="text-gray-600 leading-relaxed">
-              {order?.shippingAddress?.address}, {order?.shippingAddress?.city}, {order?.shippingAddress?.state}
-            </p>
           </div>
         </div>
 
-        {/* BILLING */}
-        <div className="bg-white border border-gray-100 shadow-sm p-6">
-          <h2 className="text-lg font-bold text-primary-blue">Billing Address</h2>
-          <div className="space-y-2 mt-3">
-            <h3 className="font-semibold text-lg text-[#0f172a]">{order?.billingAddress?.fullName}</h3>
-            <p className="text-gray-600">Phone : {order?.billingAddress?.mobile}</p>
-            <p className="text-gray-600 leading-relaxed">
-              {order?.billingAddress?.address}, {order?.billingAddress?.city}, {order?.billingAddress?.state}
-            </p>
-          </div>
-        </div>
 
-        {/* ORDER SUMMARY */}
-        <div className="bg-white border border-gray-100 shadow-sm p-6">
+        {/* RIGHT */}
+        <div className="space-y-4">
+
+          {/* SHIPPING */}
+          <div className="bg-white border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-primary-blue">Shipping Address</h2>
+            <div className="space-y-2 mt-3">
+              <h3 className="font-semibold text-lg text-[#0f172a]">{order?.shippingAddress?.fullName}</h3>
+              <p className="text-gray-600">Phone : {order?.shippingAddress?.mobile}</p>
+              <p className="text-gray-600 leading-relaxed">
+                {order?.shippingAddress?.address}, {order?.shippingAddress?.city}, {order?.shippingAddress?.state}
+              </p>
+            </div>
+          </div>
+
+          {/* BILLING */}
+          <div className="bg-white border border-gray-100 shadow-sm p-6">
+            <h2 className="text-lg font-bold text-primary-blue">Billing Address</h2>
+            <div className="space-y-2 mt-3">
+              <h3 className="font-semibold text-lg text-[#0f172a]">{order?.billingAddress?.fullName}</h3>
+              <p className="text-gray-600">Phone : {order?.billingAddress?.mobile}</p>
+              <p className="text-gray-600 leading-relaxed">
+                {order?.billingAddress?.address}, {order?.billingAddress?.city}, {order?.billingAddress?.state}
+              </p>
+            </div>
+          </div>
+
+          {/* ORDER SUMMARY */}
+          {/* <div className="bg-white border border-gray-100 shadow-sm p-6">
           <h2 className="text-xl font-bold text-primary-red mb-6">Order Summary</h2>
           <div className="pt-2 border-t border-gray-200 flex justify-between items-center">
             <span className="text-xl font-semibold text-[#0f172a]">Total</span>
             <span className="text-xl font-semibold text-primary-red">₹{order?.orderSummary?.total}</span>
           </div>
-        </div>
+        </div> */}
 
+
+
+          <div className="bg-white border border-gray-100 shadow-sm p-6 rounded-md mb-4">
+
+            {/* TITLE */}
+
+            <h2 className="text-2xl font-bold text-primary-red mb-6">
+
+              Order Summary
+
+            </h2>
+
+            {/* PRICE DETAILS */}
+
+            <div className="space-y-4">
+
+              {order?.orderSummary?.pricingDetails?.map(
+
+                (item, index) => (
+
+                  <div
+                    key={index}
+                    className={`
+
+flex justify-between items-center
+
+${item.label ===
+                        "Order Total"
+
+                        ? "pt-4 mt-4 border-t border-gray-200"
+
+                        : ""
+                      }
+`}
+                  >
+
+                    <span
+                      className={`
+
+${item.label ===
+                          "Order Total"
+
+                          ? "text-xl font-bold text-[#0f172a]"
+
+                          : "text-gray-600"
+                        }`}
+                    >
+
+                      {item.label}
+
+                    </span>
+
+                    <span
+                      className={`
+
+                  ${item.label ===
+                          "Order Total"
+
+                          ? "text-xl font-bold text-primary-red"
+
+                          : "text-gray-800"
+                        }`}
+                    >
+
+                      ₹
+
+                      {Number(
+                        item.value
+                      ).toFixed(2)}
+
+                    </span>
+
+                  </div>
+                )
+              )}
+
+            </div>
+
+          </div>
+
+
+
+        </div>
       </div>
     </div>
-     </div>
   );
 }

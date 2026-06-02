@@ -22,6 +22,10 @@ export default function CheckoutPage() {
     const [selectedBilling, setSelectedBilling] = useState(null);
     const [step, setStep] = useState(1);
 
+    const [finalTotal, setFinalTotal] = useState(0);
+    const [summaryData, setSummaryData] = useState(null);
+
+
     useEffect(() => {
         const fetchCart = async () => {
             try {
@@ -40,14 +44,14 @@ export default function CheckoutPage() {
     const handleContinueToPayment = (shippingAddr, billingAddr) => {
         // Extract the nested shipping object
         console.log(
-"shippingAddr",
-shippingAddr
-);
+            "shippingAddr",
+            shippingAddr
+        );
 
-console.log(
-"billingAddr",
-billingAddr
-);
+        console.log(
+            "billingAddr",
+            billingAddr
+        );
         setSelectedShipping(shippingAddr?.shipping || shippingAddr);
         setSelectedBilling(billingAddr?.billing || billingAddr);
         setStep(2);
@@ -76,25 +80,25 @@ billingAddr
             if (res.data.success && res.data.paymentSessionId) {
                 // Save order details to localStorage so we can finalize it after payment success
 
-                console.log({
+                // console.log({
 
-                    shippingAddress:
-                        selectedShipping,
+                //     shippingAddress:
+                //         selectedShipping,
 
-                    billingAddress:
-                        selectedBilling,
+                //     billingAddress:
+                //         selectedBilling,
 
-                    orderSummary: {
+                //     orderSummary: {
 
-                        subtotal,
+                //         subtotal,
 
-                        shipping,
+                //         shipping,
 
-                        discount,
+                //         discount,
 
-                        total,
-                    },
-                });
+                //         total,
+                //     },
+                // });
                 localStorage.setItem("pendingOrderDetails", JSON.stringify({
                     shippingAddress: selectedShipping,
                     billingAddress:
@@ -103,48 +107,41 @@ billingAddr
 
                         selectedShipping,
                     items: cart,
+
                     orderSummary: {
 
-                        subtotal,
-
-                        shipping,
-
-                        discount,
-
-                        total,
+                        ...summaryData,
 
                         pricingDetails: [
 
                             {
-                                label:
-                                    "Cart Total",
-
-                                value:
-                                    subtotal,
+                                label: "Cart Total",
+                                value: summaryData.cartTotal,
                             },
 
                             {
-                                label:
-                                    "Discount",
-
-                                value:
-                                    discount,
+                                label: "Cart Discount",
+                                value: summaryData.cartDiscount,
                             },
 
                             {
-                                label:
-                                    "Shipping",
-
-                                value:
-                                    shipping,
+                                label: "Coupon Discount",
+                                value: summaryData.couponDiscount,
                             },
 
                             {
-                                label:
-                                    "Order Total",
+                                label: "GST",
+                                value: summaryData.gstAmount,
+                            },
 
-                                value:
-                                    total,
+                            {
+                                label: "Delivery Fee",
+                                value: summaryData.deliveryFee,
+                            },
+
+                            {
+                                label: "Order Total",
+                                value: summaryData.total,
                             },
                         ],
                     },
@@ -153,7 +150,7 @@ billingAddr
 
                 // 2. Load Cashfree SDK and checkout
                 const cashfree = await load({
-                    mode: "sandbox", // use "production" for live
+                    mode: "sandbox", 
                 });
 
                 cashfree.checkout({
@@ -178,11 +175,7 @@ billingAddr
         return <div className="min-h-screen flex items-center justify-center">Loading checkout...</div>;
     }
 
-    const subtotal = cart.reduce((acc, item) => acc + item.price * (item.quantity || item.qty || 1), 0);
-    const oldPriceTotal = cart.reduce((acc, item) => acc + (item.oldPrice || item.price) * (item.quantity || item.qty || 1), 0);
-    const discount = oldPriceTotal > subtotal ? oldPriceTotal - subtotal : 0;
-    const shipping = subtotal > 500 ? 0 : 50;
-    const total = subtotal + shipping;
+
 
     return (
         <div className="bg-[#f8fafc] min-h-screen pb-20">
@@ -198,11 +191,11 @@ billingAddr
                                 <FaLock className="text-primary-blue" /> Secure Payment
                             </h2>
                             <p className="text-gray-600 mb-6">
-                                You are about to pay <span className="font-bold text-lg text-primary-red">₹{total}</span> using Cashfree secure gateway.
+                                You are about to pay <span className="font-bold text-lg text-primary-red">₹{finalTotal.toFixed(2)}</span> using Cashfree secure gateway.
                             </p>
 
                             <button
-                                onClick={() => handlePlaceOrder(total)}
+                                onClick={() => handlePlaceOrder(finalTotal)}
                                 disabled={isProcessing}
                                 className="w-full md:w-auto px-10 py-4 bg-gradient-blue-red text-white rounded-xl font-bold shadow-md hover:shadow-lg transition-all transform hover:-translate-y-0.5 disabled:opacity-70 flex justify-center items-center gap-2"
                             >
@@ -211,7 +204,7 @@ billingAddr
                                 ) : (
                                     <FaLock className="text-sm opacity-80" />
                                 )}
-                                {isProcessing ? "Initializing Payment..." : `Pay ₹${total} Securely`}
+                                {isProcessing ? "Initializing Payment..." : `Pay ₹${finalTotal.toFixed(2)} Securely`}
                             </button>
 
                             <div className="mt-6 flex flex-col items-start gap-2 text-xs text-gray-400 font-medium bg-gray-50 rounded-xl p-4">
@@ -226,7 +219,14 @@ billingAddr
                 </div>
 
                 {/* RIGHT SIDE: ORDER SUMMARY */}
-             <OrderSummary />
+                <OrderSummary
+                    onSummaryChange={
+                        setSummaryData
+                    }
+                    onTotalChange={
+                        setFinalTotal
+                    }
+                />
             </div>
         </div>
     );

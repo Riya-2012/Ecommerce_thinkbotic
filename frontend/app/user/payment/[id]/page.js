@@ -751,8 +751,7 @@ pdfHeight;
 
                       ₹
                       {
-                        item?.price *
-                        item?.quantity
+                      item?.total
                       }
 
                     </td>
@@ -773,74 +772,75 @@ pdfHeight;
 
 <div className="px-6 sm:px-10 py-8 border-t border-gray-100 bg-[#fcfcfc]">
 
-  <div className="max-w-sm ml-auto space-y-4">
+  <div className="space-y-4">
 
-    {
+    {order?.orderSummary?.pricingDetails?.map(
 
-order?.orderSummary
-?.pricingDetails
-?.map((item, index) => (
+      (item, index) => (
 
-      <div
+        <div
+          key={index}
+          className={`
 
-        key={index}
+flex justify-between items-center
 
-        className={`flex justify-between ${
-          item.label.includes(
-            "Discount"
-          )
+${
 
-            ? "text-green-600"
+item.label ===
+"Order Total"
 
-            : "text-gray-600"
-        }`}
-      >
+? "pt-4 mt-4 border-t border-gray-200"
 
-        <span>
+: ""
+}
+`}
+        >
 
-          {item.label}
+          <span
+            className={`
 
-        </span>
+${
 
-        <span>
+item.label ===
+"Order Total"
 
-          {
+? "text-xl font-bold text-[#0f172a]"
 
-item.label.includes(
-"Discount"
-)
+: "text-gray-600"
+}
+`}
+          >
 
-? `- ₹${item.value}`
+            {item.label}
 
-: `₹${item.value}`
-          }
+          </span>
 
-        </span>
+          <span
+            className={`
 
-      </div>
-    ))
-    }
+${
 
-    {/* FINAL TOTAL */}
+item.label ===
+"Order Total"
 
-    <div className="pt-4 border-t border-gray-200 flex justify-between items-center">
+? "text-xl font-bold text-primary-red"
 
-      <span className="text-2xl font-bold text-[#0f172a]">
+: "text-gray-800"
+}
+`}
+          >
 
-        Total
+            ₹
 
-      </span>
+            {Number(
+              item.value
+            ).toFixed(2)}
 
-      <span className="text-2xl font-bold text-primary-red">
+          </span>
 
-        ₹
-        {
-          order?.orderSummary?.total
-        }
-
-      </span>
-
-    </div>
+        </div>
+      )
+    )}
 
   </div>
 

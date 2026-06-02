@@ -119,13 +119,13 @@ const page = () => {
 
         <div>Qty</div>
 
-        <div className="col-span-3">
+        <div className="col-span-2">
 
           Description
 
         </div>
 
-        <div className='col-span-1'>Type</div>
+        <div className='col-span-2'>Type</div>
 
         <div className="col-span-2">
 
@@ -226,7 +226,7 @@ const page = () => {
 
           {/* DESCRIPTION */}
 
-          <div className="col-span-3">
+          <div className="col-span-2">
 
             <p className="text-sm text-gray-600 line-clamp-3">
 
@@ -238,7 +238,7 @@ const page = () => {
 
           {/* TYPE */}
 
-          <div className='col-span-1'>
+          <div className='col-span-2'>
 
             {inq.isBulkOrder ? (
 
@@ -250,7 +250,7 @@ const page = () => {
 
             ) : inq.isCustomization ? (
 
-              <span className="text-primary-blue text-xs font-semibold ">
+              <span className="text-primary-blue text-xs font-semibold  ">
 
                 Customization
 
@@ -293,16 +293,13 @@ const page = () => {
           {/* ACTION */}
 
           <div className="flex justify-center">
-
             <button
               onClick={() =>
                 handleDelete(inq._id)
               }
               className="px-4 py-2 rounded-xl bg-red-100 text-red-600 hover:bg-red-200 transition text-sm font-semibold"
             >
-
               Delete
-
             </button>
 
           </div>

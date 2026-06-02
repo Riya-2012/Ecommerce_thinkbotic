@@ -20,6 +20,7 @@ import {
 import {
   useAuth,
 } from "../context/AuthContext";
+import Link from "next/link";
 
 export default function AdminDashboard() {
 
@@ -671,13 +672,17 @@ console.log("low stock",lowStockProduct)
 
         <div className="bg-white rounded-3xl border border-gray-100 shadow-sm overflow-hidden">
 
-          <div className="px-6 py-5 border-b border-gray-100">
-
+          <div className="px-6 py-5 border-b border-gray-100 flex justify-between">
+<div>
+  
             <h2 className="text-xl font-bold text-[#0f172a]">
 
               Users Overview
 
             </h2>
+</div>
+
+<div className="text-primary-red hover:underline font-medium"><Link href="/admin/user">View all</Link></div>
 
           </div>
 
@@ -696,7 +701,7 @@ console.log("low stock",lowStockProduct)
   ) : (
 
     users
-      .slice(-5)
+      .slice(-3)
       .reverse()
       .map((user) => (
 

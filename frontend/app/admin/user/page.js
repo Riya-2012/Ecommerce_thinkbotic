@@ -262,7 +262,7 @@ const handleReset = () => {
 
                 <div>
 
-                  <h3 className="font-semibold text-[#0f172a]">
+                  <h3 className="font-semibold text-[#0f172a] break-all">
 
                     {user.username}
 
@@ -282,7 +282,7 @@ const handleReset = () => {
 
               {/* EMAIL */}
 
-              <div className="flex items-center text-gray-700 text-sm">
+              <div className="flex items-center text-gray-700 text-sm break-all">
 
                 {user.email}
 

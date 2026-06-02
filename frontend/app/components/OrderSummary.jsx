@@ -17,19 +17,9 @@ import { useCart }
 import api from "../lib/axios";
 
 function OrderSummary({
-
-  // pricingConfig = {
-
-  //   cartDiscount: 0,
-
-  //   deliveryFee: 50,
-
-  //   minFreeDeliveryAmount: 5000,
-
-  //   gst: 18,
-  // },
 showCoupon = true,
- 
+ onSummaryChange,
+ onTotalChange,
 
 }) {
 
@@ -241,6 +231,50 @@ useState(false);
     deliveryFee;
 
   // APPLY COUPON
+
+
+ 
+useEffect(() => {
+
+  if (onTotalChange) {
+
+    onTotalChange(total);
+  }
+
+  if (onSummaryChange) {
+
+    onSummaryChange({
+
+      cartTotal,
+
+      cartDiscount,
+
+      couponDiscount,
+
+      gstAmount,
+
+      deliveryFee,
+
+      total,
+    });
+  }
+
+}, [
+
+  total,
+
+  cartTotal,
+
+  cartDiscount,
+
+  couponDiscount,
+
+  gstAmount,
+
+  deliveryFee,
+]);
+
+
 
   const handleApplyCoupon =
     () => {
